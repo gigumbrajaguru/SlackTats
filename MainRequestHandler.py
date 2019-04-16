@@ -45,7 +45,7 @@ if sc.rtm_connect(with_team_state=False):
                     UserManager.registration(dict)
                 if array[0]== "-forecast":
                     ProjectAnalyzer.taskHold(dict)
-                if array[0]== "-register":
+                if array[0]== "-taskcontent":
                     ProjectAnalyzer.taskContent(dict)
             if dict.get('type') == "user_typing":
                 ProjectAnalyzer.Project.connectGithub(dict.get('channel'), dict.get('user'))

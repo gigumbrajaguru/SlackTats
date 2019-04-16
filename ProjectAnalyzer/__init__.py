@@ -323,11 +323,11 @@ def taskContent(dict):
     array = msg.split(" ")
     if checkUserRole(manager):
         taskid, content= None, None
-        if array[0]=="-taskcontent" and array[1]=="-taskid":
-            for x in range(4,len(array)):
+        if array[0]=="-taskcontent" and array[1]=="-taskid" and array[3]=="-projectid":
+            for x in range(5,len(array)):
                 arraycontent.append(array[x])
                 objectives=" ".join(arraycontent)
-            record = records.find_one_and_update({"taskid": array[2]}, {
+            record = records.find_one_and_update({"taskid": array[2],"projectid":array[4]}, {
                 '$set': {"taskobjectives": objectives}})
             text="Data updated"
             SlackCommunication.postMessege(channel,text)
