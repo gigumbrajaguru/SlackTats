@@ -1,0 +1,42 @@
+Metadata-Version: 1.1
+Name: gitpylib
+Version: 0.7
+Summary: A Python library for Git
+Home-page: http://github.com/sdg-mit/gitpylib
+Author: Santiago Perez De Rosso
+Author-email: sperezde@csail.mit.edu
+License: GPLv2
+Description: gitpylib
+        =========
+        
+        [![PyPI version](https://badge.fury.io/py/gitpylib.svg)](
+          http://badge.fury.io/py/gitpylib)
+        
+        Python library for Git.
+        
+        gitpylib is a lightweight wrapper of the `git` command.
+        
+        **As of 02/2015 gitpylib has been phased out and merged into
+        [Gitless](https://github.com/sdg-mit/gitless "Gitless").**
+        
+        Install
+        -------
+        
+        Via `pip` (the Python Package Manager):
+        
+            $> pip install gitless
+        
+Platform: UNKNOWN
+Classifier: Development Status :: 7 - Inactive
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: GNU General Public License v2 (GPLv2)
+Classifier: Natural Language :: English
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 2.6
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.2
+Classifier: Programming Language :: Python :: 3.3
+Classifier: Topic :: Software Development :: Libraries
+Classifier: Topic :: Software Development :: Version Control

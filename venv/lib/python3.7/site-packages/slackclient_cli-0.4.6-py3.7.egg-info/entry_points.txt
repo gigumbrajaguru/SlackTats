@@ -1,0 +1,3 @@
+[console_scripts]
+slackclient-cli = slackclient_cli.cli:main
+

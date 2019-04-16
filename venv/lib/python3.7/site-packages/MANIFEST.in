@@ -1,0 +1,3 @@
+include gitpyport/engine.py
+include gitpyport/Fn.dll
+include gitpyport/unzip.exe

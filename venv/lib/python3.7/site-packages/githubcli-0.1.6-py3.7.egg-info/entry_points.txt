@@ -1,0 +1,3 @@
+[console_scripts]
+gh = githubcli.githubcli:GitHubCli.cli
+

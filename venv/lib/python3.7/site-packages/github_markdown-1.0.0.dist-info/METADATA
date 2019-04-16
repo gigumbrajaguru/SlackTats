@@ -1,0 +1,13 @@
+Metadata-Version: 2.1
+Name: github-markdown
+Version: 1.0.0
+Summary: A github-friendly markdown converter for parsing markdown containing latex equations 
+Home-page: https://github.com/thomasnilsson/github_markdown
+Author: tnni
+Author-email: tnni@dtu.dk
+License: MIT
+Platform: UNKNOWN
+
+UNKNOWN
+
+

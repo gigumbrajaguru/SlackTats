@@ -1,0 +1,3 @@
+[console_scripts]
+githubcap-cli = githubcap.cli:cli
+

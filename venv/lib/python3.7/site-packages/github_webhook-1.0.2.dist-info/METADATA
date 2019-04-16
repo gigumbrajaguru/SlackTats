@@ -1,0 +1,27 @@
+Metadata-Version: 2.0
+Name: github-webhook
+Version: 1.0.2
+Summary: Very simple, but powerful, microframework for writing Github webhooks in Python
+Home-page: https://github.com/bloomberg/python-github-webhook
+Author: Alex Chamberlain, Fred Phillips, Daniel Kiss, Daniel Beer
+Author-email: achamberlai9@bloomberg.net, fphillips7@bloomberg.net, dkiss1@bloomberg.net, dbeer1@bloomberg.net
+License: Apache 2.0
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Framework :: Flask
+Classifier: Environment :: Web Environment
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: Apache Software License
+Classifier: Operating System :: MacOS :: MacOS X
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX
+Classifier: Programming Language :: Python :: 2
+Classifier: Programming Language :: Python :: 3
+Classifier: Topic :: Software Development :: Version Control
+Requires-Dist: flask
+Requires-Dist: six
+
+UNKNOWN
+
+

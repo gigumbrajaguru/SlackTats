@@ -1,0 +1,25 @@
+Metadata-Version: 2.0
+Name: slackcli
+Version: 1.0.0
+Summary: Slack CLI Application
+Home-page: https://github.com/traveloka/slackcli
+Author: Ricky Winata
+Author-email: ricky.w12@gmail.com
+License: MIT
+Keywords: slack cli
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: Intended Audience :: Information Technology
+Classifier: Intended Audience :: System Administrators
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Natural Language :: English
+Classifier: Operating System :: POSIX
+Classifier: Topic :: System :: System Administration
+Classifier: Topic :: Utilities
+Requires-Dist: slackclient
+
+UNKNOWN
+
+

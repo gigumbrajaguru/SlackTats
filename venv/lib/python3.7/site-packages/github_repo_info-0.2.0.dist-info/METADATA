@@ -1,0 +1,82 @@
+Metadata-Version: 2.0
+Name: github-repo-info
+Version: 0.2.0
+Summary: Provides access to a local GitHub repository's configuration.
+Home-page: https://github.com/techdragon/python-github-repo-info
+Author: Samuel Bishop
+Author-email: sam@psyx.co
+License: BSD
+Platform: UNKNOWN
+Classifier: Development Status :: 5 - Production/Stable
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: BSD License
+Classifier: Operating System :: Unix
+Classifier: Operating System :: POSIX
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 2.7
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: Implementation :: CPython
+Classifier: Programming Language :: Python :: Implementation :: PyPy
+Classifier: Topic :: Utilities
+Requires-Dist: git-repo-info (>=0.4.0)
+
+========
+Overview
+========
+
+
+
+Provides access to a local GitHub repository's configuration.
+
+* Free software: MIT license
+
+Installation
+============
+
+::
+
+    pip install github-repo-info
+
+Documentation
+=============
+
+https://python-github-repo-info.readthedocs.io/
+
+Development
+===========
+
+To run the all tests run::
+
+    tox
+
+Note, to combine the coverage data from all the tox environments run:
+
+.. list-table::
+    :widths: 10 90
+    :stub-columns: 1
+
+    - - Windows
+      - ::
+
+            set PYTEST_ADDOPTS=--cov-append
+            tox
+
+    - - Other
+      - ::
+
+            PYTEST_ADDOPTS=--cov-append tox
+
+
+Changelog
+=========
+
+0.1.0 (2017-06-30)
+------------------
+
+* First release on PyPI.
+
+

@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: gitpyport
+Version: 0.1
+Summary: This module will help to import github python packages as python module
+Home-page: UNKNOWN
+Author: Dipnarayan Das
+Author-email: dipnarayan.das35@gmail.com
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN

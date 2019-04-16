@@ -1,0 +1,3 @@
+[console_scripts]
+github-repo-opener = github_repo_opener:main
+

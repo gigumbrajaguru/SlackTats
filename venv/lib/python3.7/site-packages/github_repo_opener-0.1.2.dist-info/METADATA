@@ -1,0 +1,115 @@
+Metadata-Version: 2.1
+Name: github-repo-opener
+Version: 0.1.2
+Summary: A tool to open your GitHub repository page quickly.
+Home-page: https://github.com/gh640/github_repo_opener
+Author: Goto Hayato
+Author-email: habita.gh@gmail.com
+License: MIT
+Keywords: github repository
+Platform: UNKNOWN
+Classifier: Environment :: Console
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Operating System :: MacOS
+Classifier: Operating System :: Microsoft :: Windows
+Classifier: Operating System :: POSIX :: Linux
+Classifier: Programming Language :: Python
+Classifier: Programming Language :: Python :: 3.4
+Classifier: Programming Language :: Python :: 3.5
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Programming Language :: Python :: 3.7
+Classifier: Topic :: Software Development
+Classifier: Topic :: Software Development :: Version Control :: Git
+Classifier: Topic :: Utilities
+Requires-Python: >=3.4
+Requires-Dist: click (>=6.0)
+Requires-Dist: peewee (>=3.0.0)
+Requires-Dist: prompt-toolkit
+Requires-Dist: pygithub (>=1.0)
+
+
+####################
+`github_repo_opener`
+####################
+
+A CLI tool to open a front page of owned GitHub repositories quickly.
+
+
+************
+Installation
+************
+
+.. code-block:: bash
+
+    $ pip install github_repo_opener
+
+
+**************
+Prerequisition
+**************
+
+User has a GitHub access token.
+
+
+*****
+Usage
+*****
+
+Once installed the package, you can use `github-repo-opener` command.
+
+.. code-block:: bash
+
+    $ github-repo-opener
+
+.. image:: https://raw.githubusercontent.com/gh640/github_repo_opener/master/assets/capture-01-no-command.gif
+
+Prepare a local database
+========================
+
+.. code-block:: bash
+
+    $ github-repo-opener initdb
+
+This creates a sqlite database file at :code:`~/.cache/github_repo_opener/cache.sqlite3`.
+
+Fetch repository data and store them in the local database
+==========================================================
+
+.. code-block:: bash
+
+    $ github-repo-opener fetch
+
+Show repository names
+=====================
+
+.. code-block:: bash
+
+    $ github-repo-opener show
+
+Open a repository front page
+============================
+
+.. code-block:: bash
+
+    $ github-repo-opener open
+
+.. image:: https://raw.githubusercontent.com/gh640/github_repo_opener/master/assets/capture-02-open.gif
+
+Drop the local database
+=======================
+
+.. code-block:: bash
+
+    $ github-repo-opener dropdb
+
+This deletes the sqlite database file at :code:`~/.cache/github_repo_opener/cache.sqlite3`.
+
+
+*******
+License
+*******
+
+Licensed under MIT license.
+
+

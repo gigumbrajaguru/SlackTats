@@ -1,0 +1,10 @@
+Metadata-Version: 1.0
+Name: slackclient-reconnect
+Version: 1.0.1
+Summary: Python client for Slack.com, with reconnect logic
+Home-page: https://github.com/btubbs/python-slackclient/tree/ClientReconnect
+Author: Ryan Huber
+Author-email: ryan@slack-corp.com
+License: MIT
+Description: UNKNOWN
+Platform: UNKNOWN

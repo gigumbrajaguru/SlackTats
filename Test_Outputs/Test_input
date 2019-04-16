@@ -1,0 +1,13 @@
+-createtasks -taskname go -taskid 123 -projectid 1 -freeslack 2 -startdate 2019/1/1 -enddate 2019/2/2 -type important
+
+
+
+
+#projectid ab1002
+
+#taskid ab1002.01.001
+#taskname commit_test
+
+#taskcontent
+1. complete task read
+2.complete calculating progress

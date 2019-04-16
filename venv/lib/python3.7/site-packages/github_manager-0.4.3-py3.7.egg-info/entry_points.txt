@@ -1,0 +1,3 @@
+[console_scripts]
+gitman = gitman.gitman:main
+

@@ -1,0 +1,16 @@
+Metadata-Version: 1.1
+Name: github-manager
+Version: 0.4.3
+Summary: Gitman - Simple CLI Github Repository Manager
+Home-page: https://github.com/Nelthorim/gitman
+Author: Eduardo Coello Rodriguez
+Author-email: ecoerod@gmail.com
+License: MIT
+Description: UNKNOWN
+Keywords: git github repository manager
+Platform: UNKNOWN
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: Topic :: Software Development :: Build Tools
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
