@@ -93,7 +93,7 @@ def updateproject(dicts):
         SlackCommunication.postMessege(channels, text)
 
 def connectGithub(channels,managerid):
-    try:
+
         documents = db.get_collection("project")
         gitlink=documents.find({"managerid": managerid}).distinct("githublink")[0]
         if gitlink != None:
@@ -110,9 +110,7 @@ def connectGithub(channels,managerid):
                 else:
                     text = 'Repo description: Server problem'
                     SlackCommunication.postMessege(channels, text)
-    except:
-        text = 'System Corrupted'
-        SlackCommunication.postMessege(channels, text)
+
 
 
 def printrepo(channels,repo):
@@ -137,62 +135,60 @@ def printrepo(channels,repo):
 def checkcommit(channels,commit,repo):
     count,istest=0,0
     commitstatus=0
-    try:
-        printrepo(channels,repo)
-        commitarray=commit.message
-        commitarray=TextBlob(commitarray)
-        commitarray=commitarray.words
-        documents = db.get_collection("task")
-        if len(commitarray) > 3:
-            for word in commitarray:
-                if word == "projectid":
-                    projectid = commitarray[count + 1]
-                if word == "taskid":
-                    taskid = commitarray[count + 1]
-                if word == "taskname":
-                    taskname = commitarray[count + 1]
-                count = count + 1
-        if projectid != None and taskid != None and taskname != None:
-            taskcontentarray = documents.find({"taskname": taskname, "taskid": taskid, "projectid": projectid}).distinct("taskcontent")[
-                0].sentences
-            checkedcommits = documents.find({"projectid": projectid}).distinct("checkedcommits")
-        else:
-            text = "Skip one commit message : Not according to structure"
-            #   SlackCommunication.postMessege(channels, text)
-        print(text)
-        if taskcontentarray != None and checkedcommits != None:
-            for checkedcommit in checkedcommits:
-                if str(commit.hexsha) == checkedcommit:
-                    commitstatus = 1
-        else:
-            text = "Skip one commit message : Not according to structure"
-            print(text)
-        #  SlackCommunication.postMessege(channels, text)
+    commitcontent=""
+    projectid,taskid,taskname=None,None,None
+    taskcontentarray,checkedcommits=None,None
+    commitarray = commit.message
+    commitarray = TextBlob(commitarray)
+    commitarray = commitarray.words
+    documents = db.get_collection("task")
+    if len(commitarray) > 3:
+        for word in commitarray:
+            if word == "projectid":
+                projectid = commitarray[count + 1]
+            if word == "taskid":
+                taskid = commitarray[count + 1]
+            if word == "taskname":
+                taskname = commitarray[count + 1]
+            count = count + 1
+    if projectid != None and taskid != None and taskname != None:
+        taskcontentarray = \
+        documents.find({"taskname": taskname, "taskid": taskid, "projectid": projectid}).distinct("taskobjectives")[
+            0].split(" #")
+        checkedcommits = documents.find({"projectid": projectid}).distinct("checkedcommits")
+    else:
+        text = "Skip one commit message : Not according to structure"
+    if checkedcommits != [] and checkedcommits != None:
+        for checkedcommit in checkedcommits:
+            if str(commit.hexsha) == checkedcommit:
+                commitstatus = 1
+                break
+    else:
         if commitstatus == 0:
-            maxneeds = len(taskcontentarray)
-            for x in range(0, len(taskcontentarray)):
-                for y in range(0, len(commitarray)):
-                    correctedcommitline = TextBlob(commitarray[y]).correct()
-                    correcteddataline = TextBlob(taskcontentarray[x]).correct()
-                    ratio = SequenceMatcher(None, correcteddataline, correctedcommitline).ratio()
-                    comparisonphaseone = Synset(correcteddataline)
-                    comparisonphasetwo = Synset(correctedcommitline)
-                    rationtwo = comparisonphasetwo.path_similarity(comparisonphaseone)
-                    if commitarray[x].words.count('completed') > 1 or commitarray[x].words.count('finished') > 1:
-                        if rationtwo > 0.7 and ratio > 0.7:
-                            completedsubtasks = completedsubtasks + 1
-                    if commitarray[x].words.count('tested') > 1 or commitarray[x].words.count('verified') > 1:
-                        if rationtwo > 0.7 and ratio > 0.7:
-                            istest = 10
-            commitcompletion = ((completedsubtasks / maxneeds) * 100) - 10 + istest
-            documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
-            checkedcommits.append(str(commit.hexsha))
-            projectdocuments = db.get_collection("project")
-            projectdocuments.find_one_and_update({"projectid": commitarray[2]},
-                                                 {'$set': {"checkedcommits": checkedcommits}})
+            if taskcontentarray != [] and taskcontentarray != None:
+                maxneeds = len(taskcontentarray)
+                for y in range(7, len(commitarray)):
+                    if commitarray[y] != None and commitarray[y] != " " and commitarray[y] != "":
+                        commitcontent = commitcontent+" "+commitarray[y]
+                commitcontentarray=commitcontent.split("#")
+                print(commitcontent)
+            #   for x in range(0, len(taskcontentarray)):
+            # if taskcontentarray[x] != None and taskcontentarray[x] != " " and taskcontentarray[x] != "":
+            # ratio = SequenceMatcher(None, correcteddataline, correctedcommitline).ratio()
+            # comparisonphaseone = Synset(correcteddataline)
+            # comparisonphasetwo = Synset(correctedcommitline)
+            # rationtwo = comparisonphasetwo.path_similarity(comparisonphaseone)
 
+            # if commitarray[x].words.count('completed') > 1 or commitarray[x].words.count('finished') > 1:
+            #      if rationtwo > 0.7 and ratio > 0.7:
+            #          completedsubtasks = completedsubtasks + 1
+            #  if commitarray[x].words.count('tested') > 1 or commitarray[x].words.count('verified') > 1:
+            #      if rationtwo > 0.7 and ratio > 0.7:
+            #          istest = 10
+            # commitcompletion = ((completedsubtasks / maxneeds) * 100) - 10 + istest
+            # documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
+            #  checkedcommits.append(str(commit.hexsha))
+            # projectdocuments = db.get_collection("project")
+            #  projectdocuments.find_one_and_update({"projectid": commitarray[2]},
+            #                 {'$set': {"checkedcommits": checkedcommits}})
 
-    except:
-        text = 'BOT corrupted. Wrong commit message structure.'
-        print(text)
-       # SlackCommunication.postMessege(channels, text)
