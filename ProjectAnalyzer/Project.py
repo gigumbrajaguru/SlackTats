@@ -1,3 +1,4 @@
+import re
 import shutil
 
 from slackclient import SlackClient
@@ -165,15 +166,22 @@ def checkcommit(channels,commit,repo):
                 break
     else:
         if commitstatus == 0:
+            count=0
             if taskcontentarray != [] and taskcontentarray != None:
                 maxneeds = len(taskcontentarray)
-                for y in range(7, len(commitarray)):
+                for y in range(6, len(commitarray)):
                     if commitarray[y] != None and commitarray[y] != " " and commitarray[y] != "":
                         commitcontent = commitcontent+" "+commitarray[y]
-                commitcontentarray=commitcontent.split("#")
-                print(commitcontent)
-            #   for x in range(0, len(taskcontentarray)):
-            # if taskcontentarray[x] != None and taskcontentarray[x] != " " and taskcontentarray[x] != "":
+                numberarray=re.findall(r'\b\d+\b',commitcontent)
+                for num in range(0,len(numberarray)-1):
+                    splt=str(numberarray[count])+"."
+                    spltl=str(numberarray[count+1]) + "."
+                    contentfilter=commitcontent.split(splt)
+                    commitscontent=contentfilter[1].split(spltl)
+                    count = count + 1
+                   # commitscontent=contentfilter[1].split(spltl)
+               # for x in range(0, len(taskcontentarray)):
+                #if taskcontentarray[x] != None and taskcontentarray[x] != " " and taskcontentarray[x] != "":
             # ratio = SequenceMatcher(None, correcteddataline, correctedcommitline).ratio()
             # comparisonphaseone = Synset(correcteddataline)
             # comparisonphasetwo = Synset(correctedcommitline)

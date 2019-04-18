@@ -9,5 +9,5 @@
 #taskname commit_test
 
 #taskcontent
-1.task read
-2.calculating progress
+#task read
+#calculating progress
