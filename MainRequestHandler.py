@@ -47,6 +47,8 @@ if sc.rtm_connect(with_team_state=False):
                     ProjectAnalyzer.taskHold(dict)
                 if array[0]== "-taskcontent":
                     ProjectAnalyzer.taskContent(dict)
+                if array[0] == "-viewrepo":
+                    ProjectAnalyzer.Project.printrepo(dict)
             if dict.get('type') == "user_typing":
                 ProjectAnalyzer.Project.connectGithub(dict.get('channel'), dict.get('user'))
         time.sleep(1)

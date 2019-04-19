@@ -6,12 +6,9 @@ import pymongo
 import os
 from git import Repo
 from ProjectAnalyzer import SlackCommunication
-from difflib import SequenceMatcher
 from textblob import TextBlob
 from fuzzywuzzy import fuzz
-
 import nltk
-from textblob.wordnet import Synset
 
 
 nltk.download('wordnet')
@@ -21,7 +18,7 @@ db=connection.get_database("SlackTats")
 slack_token = "xoxb-402757429986-412087740598-8bGVF1HoEKEdfQws9aNDTeUM"
 sc = SlackClient(slack_token)
 completioncases={"completed":"completed","finished":"finished","fixed":"fixed","percentage":"percentage","removed":"removed"}
-
+repo=None
 def checkUserRole(manger):
     collection=db.get_collection("user")
     documentcount=collection.count_documents({"userid":manger})
@@ -96,7 +93,6 @@ def updateproject(dicts):
         SlackCommunication.postMessege(channels, text)
 
 def connectGithub(channels,managerid):
-
         documents = db.get_collection("project")
         gitlink=documents.find({"managerid": managerid}).distinct("githublink")[0]
         if gitlink != None:
@@ -116,22 +112,27 @@ def connectGithub(channels,managerid):
 
 
 
-def printrepo(channels,repo):
-    text = 'Repo description: {}'.format(repo.description)
-    print(text)
-    #SlackCommunication.postMessege(channels, text)
-
-    text = 'Repo active branch is {}'.format(repo.active_branch)
-    print(text)
-   # SlackCommunication.postMessege(channels, text)
-    for remote in repo.remotes:
-        text = 'Remote named "{}" with URL "{}"'.format(remote, remote.url)
-        print(text)
-      #  SlackCommunication.postMessege(channels, text)
-
-    text = 'Last commit for repo is {}.'.format(str(repo.head.commit.hexsha))
-    print(text)
-    #SlackCommunication.postMessege(channels, text)
+def printrepo(dicts):
+    managerid=dicts.get("user")
+    channels = dicts.get("channel")
+    documents = db.get_collection("project")
+    gitlink = documents.find({"managerid": managerid}).distinct("githublink")[0]
+    if gitlink != None:
+        if gitlink.split("//")[0] == "https:":
+            if os.path.exists("../Projects/rep"):
+                shutil.rmtree("../Projects/rep")
+            Repo.clone_from(gitlink, "../Projects/rep")
+            repo = Repo("../Projects/rep")
+            if not repo.bare:
+                text = 'Repo description: {}'.format(repo.description)
+                SlackCommunication.postMessege(channels, text)
+                text = 'Repo active branch is {}'.format(repo.active_branch)
+                SlackCommunication.postMessege(channels, text)
+                for remote in repo.remotes:
+                    text = 'Remote named "{}" with URL "{}"'.format(remote, remote.url)
+                    SlackCommunication.postMessege(channels, text)
+                text = 'Last commit for repo is {}.'.format(str(repo.head.commit.hexsha))
+                SlackCommunication.postMessege(channels, text)
 
 
 
@@ -161,6 +162,7 @@ def checkcommit(channels,commit,repo):
         checkedcommits = documents.find({"projectid": projectid}).distinct("checkedcommits")
     else:
         text = "Skip one commit message : Not according to structure"
+
     if checkedcommits != [] and checkedcommits != None:
         for checkedcommit in checkedcommits:
             if str(commit.hexsha) == checkedcommit:
@@ -186,18 +188,17 @@ def checkcommit(channels,commit,repo):
                     for rep in taskcontentarray:
                         if rep != '':
                             counts = counts + 1
-                            for turns in range(0,len(commitscontent)):
-                                check=commitarray[turns]
-                                ratiotwo=fuzz.ratio(check, rep)
-                                ratio = fuzz.ratio(check, rep)
+                            for turns in commitscontent:
+                                ratio = fuzz.ratio(str(turns),str(rep))
                                 if ratio ==100:
                                     completedsubtasks = completedsubtasks + 1
-                                elif TextBlob(commitarray[turns]).words.count('Completed') > 1 and ratiotwo>6 :
+                                elif TextBlob(turns).words.count('Completed') > 0 and ratio>59 :
                                     completedsubtasks = completedsubtasks + 1
-                                if TextBlob(commitarray[turns]).words.count('tested') > 1 or TextBlob(
-                                        commitarray[turns]).words.count('verified') > 1:
+                                elif TextBlob(turns).words.count('Finished') > 0 and ratio > 59:
+                                    completedsubtasks = completedsubtasks + 1
+                                if TextBlob(turns).words.count('tested')> 1 or TextBlob(
+                                        turns).words.count('verified') > 1:
                                     istest = 10
-                    print(ratiotwo)
                     commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
                     documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
                     checkedcommits.append(str(commit.hexsha))
