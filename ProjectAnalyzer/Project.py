@@ -8,6 +8,8 @@ from git import Repo
 from ProjectAnalyzer import SlackCommunication
 from difflib import SequenceMatcher
 from textblob import TextBlob
+from textblob.wordnet import Synset
+
 import nltk
 from textblob.wordnet import Synset
 
@@ -166,9 +168,10 @@ def checkcommit(channels,commit,repo):
                 break
     else:
         if commitstatus == 0:
-            count=0
+            commitscontent=None
+            completedsubtasks,counts=0,0
+            count,istest=0,0
             if taskcontentarray != [] and taskcontentarray != None:
-                maxneeds = len(taskcontentarray)
                 for y in range(6, len(commitarray)):
                     if commitarray[y] != None and commitarray[y] != " " and commitarray[y] != "":
                         commitcontent = commitcontent+" "+commitarray[y]
@@ -179,24 +182,30 @@ def checkcommit(channels,commit,repo):
                     contentfilter=commitcontent.split(splt)
                     commitscontent=contentfilter[1].split(spltl)
                     count = count + 1
-                   # commitscontent=contentfilter[1].split(spltl)
-               # for x in range(0, len(taskcontentarray)):
-                #if taskcontentarray[x] != None and taskcontentarray[x] != " " and taskcontentarray[x] != "":
-            # ratio = SequenceMatcher(None, correcteddataline, correctedcommitline).ratio()
-            # comparisonphaseone = Synset(correcteddataline)
-            # comparisonphasetwo = Synset(correctedcommitline)
-            # rationtwo = comparisonphasetwo.path_similarity(comparisonphaseone)
+                if commitscontent!=None:
+                    for rep in taskcontentarray:
+                        if rep != '':
+                            counts = counts + 1
+                            for turns in range(0,len(commitscontent)):
+                                check=commitarray[turns]
+                                similaritycheckone=Synset(check)
+                                similaritychecktwo=Synset(rep)
+                                ratiotwo=similaritycheckone.path_similarity(similaritychecktwo)
+                                ratio = SequenceMatcher(None, rep, commitscontent[turns]).ratio()
+                                if ratio ==1:
+                                    completedsubtasks = completedsubtasks + 1
+                                elif TextBlob(commitarray[turns]).words.count('Completed') > 1 and ratiotwo>0.7 :
+                                    completedsubtasks = completedsubtasks + 1
+                                if TextBlob(commitarray[turns]).words.count('tested') > 1 or TextBlob(
+                                        commitarray[turns]).words.count('verified') > 1:
+                                    istest = 10
 
-            # if commitarray[x].words.count('completed') > 1 or commitarray[x].words.count('finished') > 1:
-            #      if rationtwo > 0.7 and ratio > 0.7:
-            #          completedsubtasks = completedsubtasks + 1
-            #  if commitarray[x].words.count('tested') > 1 or commitarray[x].words.count('verified') > 1:
-            #      if rationtwo > 0.7 and ratio > 0.7:
-            #          istest = 10
-            # commitcompletion = ((completedsubtasks / maxneeds) * 100) - 10 + istest
-            # documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
-            #  checkedcommits.append(str(commit.hexsha))
-            # projectdocuments = db.get_collection("project")
-            #  projectdocuments.find_one_and_update({"projectid": commitarray[2]},
-            #                 {'$set': {"checkedcommits": checkedcommits}})
+                    print(commitscontent)
+                    print(taskcontentarray)
+                    print(counts)
+                    commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
+                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
+                    checkedcommits.append(str(commit.hexsha))
+                    projectdocuments = db.get_collection("project")
+                    projectdocuments.find_one_and_update({"projectid": commitarray[2]},{'$set': {"checkedcommits": checkedcommits}})
 
