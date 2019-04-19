@@ -8,7 +8,7 @@ from git import Repo
 from ProjectAnalyzer import SlackCommunication
 from difflib import SequenceMatcher
 from textblob import TextBlob
-from textblob.wordnet import Synset
+from fuzzywuzzy import fuzz
 
 import nltk
 from textblob.wordnet import Synset
@@ -188,21 +188,16 @@ def checkcommit(channels,commit,repo):
                             counts = counts + 1
                             for turns in range(0,len(commitscontent)):
                                 check=commitarray[turns]
-                                similaritycheckone=Synset(check)
-                                similaritychecktwo=Synset(rep)
-                                ratiotwo=similaritycheckone.path_similarity(similaritychecktwo)
-                                ratio = SequenceMatcher(None, rep, commitscontent[turns]).ratio()
-                                if ratio ==1:
+                                ratiotwo=fuzz.ratio(check, rep)
+                                ratio = fuzz.ratio(check, rep)
+                                if ratio ==100:
                                     completedsubtasks = completedsubtasks + 1
-                                elif TextBlob(commitarray[turns]).words.count('Completed') > 1 and ratiotwo>0.7 :
+                                elif TextBlob(commitarray[turns]).words.count('Completed') > 1 and ratiotwo>6 :
                                     completedsubtasks = completedsubtasks + 1
                                 if TextBlob(commitarray[turns]).words.count('tested') > 1 or TextBlob(
                                         commitarray[turns]).words.count('verified') > 1:
                                     istest = 10
-
-                    print(commitscontent)
-                    print(taskcontentarray)
-                    print(counts)
+                    print(ratiotwo)
                     commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
                     documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
                     checkedcommits.append(str(commit.hexsha))
