@@ -19,6 +19,8 @@ slack_token = "xoxb-402757429986-412087740598-8bGVF1HoEKEdfQws9aNDTeUM"
 sc = SlackClient(slack_token)
 completioncases={"completed":"completed","finished":"finished","fixed":"fixed","percentage":"percentage","removed":"removed"}
 repo=None
+globalprojectid=None
+
 def checkUserRole(manger):
     collection=db.get_collection("user")
     documentcount=collection.count_documents({"userid":manger})
@@ -140,28 +142,47 @@ def checkcommit(channels,commit,repo):
     count,istest=0,0
     commitstatus=0
     commitcontent=""
+    check=0
     projectid,taskid,taskname=None,None,None
     taskcontentarray,checkedcommits=None,None
     commitarray = commit.message
     commitarray = TextBlob(commitarray)
     commitarray = commitarray.words
     documents = db.get_collection("task")
+    projectdocuments = db.get_collection("project")
     if len(commitarray) > 3:
         for word in commitarray:
             if word == "projectid":
                 projectid = commitarray[count + 1]
+                if projectid!=None:
+                    globalprojectid=projectid
             if word == "taskid":
                 taskid = commitarray[count + 1]
             if word == "taskname":
                 taskname = commitarray[count + 1]
             count = count + 1
-    if projectid != None and taskid != None and taskname != None:
-        taskcontentarray = \
-        documents.find({"taskname": taskname, "taskid": taskid, "projectid": projectid}).distinct("taskobjectives")[
-            0].split(" #")
-        checkedcommits = documents.find({"projectid": projectid}).distinct("checkedcommits")
-    else:
-        text = "Skip one commit message : Not according to structure"
+        if globalprojectid != [] and globalprojectid != None:
+            checkedcommits = projectdocuments.find({"projectid": globalprojectid}).distinct("checkedcommits")
+            for checkedcommit in checkedcommits:
+                if str(commit.hexsha) == checkedcommit:
+                    check = 1
+                    break
+            if check==0:
+                projectdocuments.update({"projectid": globalprojectid},
+                                        {'$push': {"checkedcommits": str(commit.hexsha)}})
+
+
+
+        if projectid != None and taskid != None and taskname != None:
+            taskcontentarray = \
+            documents.find({"taskname": taskname, "taskid": taskid, "projectid": projectid}).distinct("taskobjectives")[
+                0].split(" #")
+            checkedcommits = projectdocuments.find({"projectid": projectid}).distinct("checkedcommits")
+
+        elif globalprojectid!=None:
+            text = "Skip one commit message : Not according to structure"
+            SlackCommunication.postMessege(channels, text)
+
 
     if checkedcommits != [] and checkedcommits != None:
         for checkedcommit in checkedcommits:
@@ -199,9 +220,10 @@ def checkcommit(channels,commit,repo):
                                 if TextBlob(turns).words.count('tested')> 1 or TextBlob(
                                         turns).words.count('verified') > 1:
                                     istest = 10
-                    commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
-                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
-                    checkedcommits.append(str(commit.hexsha))
-                    projectdocuments = db.get_collection("project")
-                    projectdocuments.find_one_and_update({"projectid": commitarray[2]},{'$set': {"checkedcommits": checkedcommits}})
+                commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
+                documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
+
+
+
+
 
