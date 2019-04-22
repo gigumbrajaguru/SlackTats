@@ -336,22 +336,21 @@ def checkTaskStatus(taskid):
     return Task.taskstatus(taskid)
 
 def taskHold(dict):
+    taskid,days=None,0
+    startdate,count=None,0
     msg = dict.get("text")
     manager = dict.get("user")
     channel = dict.get("channel")
     array = msg.split(" ")
-    if checkUserRole(manager) and SlackCommunication.usercount() < 2:
+    if checkUserRole(manager) and SlackCommunication.usercount() >1:
         for z in array:
             if z[0] != None and z[0] != " ":
                 if z[0] == "-":
                     if z == "-taskid":
                         taskid = array[count + 1]
-                        if z == "-startdate":
-                            startdate = array[count + 1]
-                        if z == "-days":
-                            days = array[count + 1]
-
+                    if z == "-startdate":
+                        startdate = array[count + 1]
+                    if z == "-days":
+                        days = int(array[count + 1])
             count = count + 1
-
-
-    Task.taskforecast(taskid,startdate,days,channel)
+        Task.taskforecast(taskid,startdate,days,channel)

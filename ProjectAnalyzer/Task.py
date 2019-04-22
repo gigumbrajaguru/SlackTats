@@ -142,11 +142,12 @@ def taskstatus(taskid):
 
 
 def taskforecast(taskid,startdate,days,channels):
-    endepend,startdepend,remaindays=None,None,None
+    endepend,startdepend,remaindays,taskfree=None,None,None,None
+    holdendyr, holdendmonth, holdenddate=0,0,0
     try:
         documents = db.get_collection("task")
         taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
-        taskfree = documents.find({"taskid": taskid}).distinct("freeslack")[0]
+        taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
         starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
         endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
         type= documents.find({"taskid": taskid}).distinct("type")[0]
@@ -164,19 +165,19 @@ def taskforecast(taskid,startdate,days,channels):
         remaindays=days-taskfree
 
     holdtarttime = startdate.split("/")
-    holdstrtyr = holdtarttime[0]
-    holdstrtmon = holdtarttime[1]
-    holdstrtdt = holdtarttime[2]
+    holdstrtyr = int(holdtarttime[0])
+    holdstrtmon = int(holdtarttime[1])
+    holdstrtdt = int(holdtarttime[2])
 
     taskstarttime = starttime.split("/")
-    taskstrtyr = taskstarttime[0]
-    taskstrtmon = taskstarttime[1]
-    taskstrtdt = taskstarttime[2]
+    taskstrtyr = int(taskstarttime[0])
+    taskstrtmon = int(taskstarttime[1])
+    taskstrtdt = int(taskstarttime[2])
 
     taskendtime = endtime.split("/")
-    taskendyr = taskendtime[0]
-    taskendmon = taskendtime[1]
-    taskenddt = taskendtime[2]
+    taskendyr = int(taskendtime[0])
+    taskendmon = int(taskendtime[1])
+    taskenddt = int(taskendtime[2])
 
     if (holdstrtdt+days)>30 and days<30:
         holdenddate=days-(30-holdstrtdt)
@@ -259,11 +260,12 @@ def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth
 
 
 
-
 class depends:
     documents = db.get_collection("task")
     arrays=[]
     def startdependtask(self,channels,taskid,days,remaindays):
+
+        print(taskid)
         endepends,startdepends=None,None
         dependslist = self.documents.find({"taskid": taskid}).distinct("startdepends")[0]
         dependstartarray = dependslist.split(",")
