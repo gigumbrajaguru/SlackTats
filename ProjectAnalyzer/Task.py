@@ -178,7 +178,9 @@ def taskforecast(taskid,startdate,days,channels):
     taskendyr = int(taskendtime[0])
     taskendmon = int(taskendtime[1])
     taskenddt = int(taskendtime[2])
-
+    holdendyr=holdstrtyr
+    holdendmonth=holdstrtmon
+    holdenddate=holdstrtdt
     if (holdstrtdt+days)>30 and days<30:
         holdenddate=days-(30-holdstrtdt)
         if((holdstrtmon+1)<12):
@@ -203,7 +205,6 @@ def taskforecast(taskid,startdate,days,channels):
             if holdenddate>30:
                 holdendmonth=holdendmonth+1
                 holdenddate=xdays-(30-holdstrtdt)
-
     blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,
                  taskstrtmon,taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays)
 
