@@ -211,34 +211,60 @@ def taskforecast(taskid,startdate,days,channels):
 
 def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,taskstrtmon,
                  taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays):
+    remainstatus = 0
+
+    print(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,
+                 taskstrtmon,taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays)
+    #############################################################################
     if taskstrtyr == holdstrtyr and taskstrtmon==holdstrtmon and taskstrtdt==holdstrtdt:
         depends.startdependtask(channels,taskid, days,remaindays)
     if taskendyr==holdendyr and taskendmon==holdendmonth and taskenddt==holdenddate:
         depends.enddependtask(channels,taskid, days,remaindays)
-
-
-    if taskstrtyr<holdstrtyr and taskendyr<holdendyr:
+    #############################################################################
+    if taskstrtyr>holdstrtyr and taskendyr<holdendyr:
         depends.enddependtask(channels,taskid, days,remaindays)
+        depends.startdependtask(channels, taskid, days, remaindays)
+    if taskstrtyr < holdstrtyr and taskendyr < holdendyr:
+        depends.enddependtask(channels, taskid, days, remaindays)
+    if taskstrtyr > holdstrtyr and taskendyr > holdendyr:
+        depends.startdependtask(channels, taskid, days, remaindays)
+     ############################################################################
     if taskstrtyr==holdstrtyr and taskendyr<holdendyr:
         depends.enddependtask(channels,taskid, days,remaindays)
-        if taskstrtmon == holdstrtmon and taskstrtmon > holdstrtmon :
-            if taskstrtdt > holdstrtdt and taskstrtdt == holdstrtdt:
+        if  taskstrtmon > holdstrtmon :
+            depends.startdependtask(channels, taskid, days, remaindays)
+        if taskstrtmon == holdstrtmon:
+            if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
                 depends.startdependtask(channels,taskid, days,remaindays)
     if taskstrtyr==holdstrtyr and taskendyr>holdendyr:
-        if taskstrtmon == holdstrtmon and taskstrtmon > holdstrtmon:
-            if taskstrtdt > holdstrtdt and taskstrtdt == holdstrtdt:
+        if  taskstrtmon > holdstrtmon :
+            depends.startdependtask(channels, taskid, days, remaindays)
+        if taskstrtmon == holdstrtmon:
+            if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
                 depends.startdependtask(channels,taskid, days,remaindays)
-
-
+    if taskstrtyr>holdstrtyr and taskendyr==holdendyr:
+        depends.startdependtask(channels,taskid, days,remaindays)
+        if  taskendmon > holdendmonth :
+            depends.enddependtask(channels, taskid, days, remaindays)
+        if taskendmon == holdendmonth:
+            if taskenddt > holdenddate or taskenddt == holdenddate:
+                depends.enddependtask(channels,taskid, days,remaindays)
+    if taskstrtyr<holdstrtyr and taskendyr==holdendyr:
+        if  taskendmon > holdendmonth :
+            depends.enddependtask(channels, taskid, days, remaindays)
+        if taskendmon == holdendmonth:
+            if taskenddt > holdenddate or taskenddt == holdenddate:
+                depends.enddependtask(channels,taskid, days,remaindays)
+    #############################################################################
     if taskstrtyr == holdstrtyr and taskendyr == holdendyr:
         if taskstrtmon < holdstrtmon and taskendmon < holdendmonth:
             depends.enddependtask(channels,taskid, days,remaindays)
         if taskstrtmon == holdstrtmon and taskendmon < holdendmonth:
             depends.enddependtask(channels,taskid, days,remaindays)
-            if taskstrtdt > holdstrtdt and taskstrtdt == holdstrtdt:
+            if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
                 depends.startdependtask(channels,taskid, days,remaindays)
         if taskstrtmon < holdstrtmon and taskendmon == holdendmonth:
-            if taskenddt < holdenddate and taskenddt == holdenddate:
+            if taskenddt < holdenddate or taskenddt == holdenddate:
                 depends.enddependtask(channels,taskid, days,remaindays)
         if taskstrtmon == holdstrtmon and taskendmon == holdendmonth:
             if taskstrtdt < holdstrtdt and taskenddt < holdenddate:
@@ -250,9 +276,11 @@ def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth
                 depends.startdependtask(channels,taskid, days,remaindays)
                 if remaindays!=None:
                     depends.enddependtask(channels,taskid, days,remaindays)
+                    remainstatus=1
             if taskstrtdt < holdstrtdt and taskenddt > holdenddate:
                 if remaindays!=None:
                     depends.enddependtask(channels,taskid, days,remaindays)
+                    remainstatus = 1
             if taskstrtdt < holdstrtdt and taskenddt == holdenddate:
                 depends.enddependtask(channels,taskid, days,remaindays)
             if taskstrtdt == holdstrtdt and taskenddt == holdenddate:
