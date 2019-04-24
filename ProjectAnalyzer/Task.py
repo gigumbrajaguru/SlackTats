@@ -212,115 +212,109 @@ def taskforecast(taskid,startdate,days,channels):
 def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,taskstrtmon,
                  taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays):
     remainstatus = 0
-
-    print(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,
-                 taskstrtmon,taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays)
     #############################################################################
     if taskstrtyr == holdstrtyr and taskstrtmon==holdstrtmon and taskstrtdt==holdstrtdt:
-        depends.startdependtask(channels,taskid, days,remaindays)
+        startdependtask(channels,taskid, days,remaindays)
     if taskendyr==holdendyr and taskendmon==holdendmonth and taskenddt==holdenddate:
-        depends.enddependtask(channels,taskid, days,remaindays)
+        enddependtask(channels,taskid, days,remaindays)
     #############################################################################
     if taskstrtyr>holdstrtyr and taskendyr<holdendyr:
-        depends.enddependtask(channels,taskid, days,remaindays)
-        depends.startdependtask(channels, taskid, days, remaindays)
+        enddependtask(channels,taskid, days,remaindays)
+        startdependtask(channels, taskid, days, remaindays)
     if taskstrtyr < holdstrtyr and taskendyr < holdendyr:
-        depends.enddependtask(channels, taskid, days, remaindays)
+        enddependtask(channels, taskid, days, remaindays)
     if taskstrtyr > holdstrtyr and taskendyr > holdendyr:
-        depends.startdependtask(channels, taskid, days, remaindays)
+        startdependtask(channels, taskid, days, remaindays)
      ############################################################################
     if taskstrtyr==holdstrtyr and taskendyr<holdendyr:
-        depends.enddependtask(channels,taskid, days,remaindays)
+        enddependtask(channels,taskid, days,remaindays)
         if  taskstrtmon > holdstrtmon :
-            depends.startdependtask(channels, taskid, days, remaindays)
+            startdependtask(channels, taskid, days, remaindays)
         if taskstrtmon == holdstrtmon:
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
-                depends.startdependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid, days,remaindays)
     if taskstrtyr==holdstrtyr and taskendyr>holdendyr:
         if  taskstrtmon > holdstrtmon :
-            depends.startdependtask(channels, taskid, days, remaindays)
+            startdependtask(channels, taskid, days, remaindays)
         if taskstrtmon == holdstrtmon:
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
-                depends.startdependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid, days,remaindays)
     if taskstrtyr>holdstrtyr and taskendyr==holdendyr:
-        depends.startdependtask(channels,taskid, days,remaindays)
+        startdependtask(channels,taskid, days,remaindays)
         if  taskendmon > holdendmonth :
-            depends.enddependtask(channels, taskid, days, remaindays)
+            enddependtask(channels, taskid, days, remaindays)
         if taskendmon == holdendmonth:
             if taskenddt > holdenddate or taskenddt == holdenddate:
-                depends.enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid, days,remaindays)
     if taskstrtyr<holdstrtyr and taskendyr==holdendyr:
         if  taskendmon > holdendmonth :
-            depends.enddependtask(channels, taskid, days, remaindays)
+            enddependtask(channels, taskid, days, remaindays)
         if taskendmon == holdendmonth:
             if taskenddt > holdenddate or taskenddt == holdenddate:
-                depends.enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid, days,remaindays)
     #############################################################################
     if taskstrtyr == holdstrtyr and taskendyr == holdendyr:
         if taskstrtmon < holdstrtmon and taskendmon < holdendmonth:
-            depends.enddependtask(channels,taskid, days,remaindays)
+            enddependtask(channels,taskid, days,remaindays)
         if taskstrtmon == holdstrtmon and taskendmon < holdendmonth:
-            depends.enddependtask(channels,taskid, days,remaindays)
+            enddependtask(channels,taskid, days,remaindays)
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
-                depends.startdependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid, days,remaindays)
         if taskstrtmon < holdstrtmon and taskendmon == holdendmonth:
             if taskenddt < holdenddate or taskenddt == holdenddate:
-                depends.enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid, days,remaindays)
         if taskstrtmon == holdstrtmon and taskendmon == holdendmonth:
             if taskstrtdt < holdstrtdt and taskenddt < holdenddate:
-                depends.enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid, days,remaindays)
             if taskstrtdt == holdstrtdt and taskenddt < holdenddate:
-                depends.startdependtask(channels,taskid, days,remaindays)
-                depends.enddependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid, days,remaindays)
             if taskstrtdt == holdstrtdt and taskenddt > holdenddate:
-                depends.startdependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid, days,remaindays)
                 if remaindays!=None:
-                    depends.enddependtask(channels,taskid, days,remaindays)
+                    enddependtask(channels,taskid, days,remaindays)
                     remainstatus=1
             if taskstrtdt < holdstrtdt and taskenddt > holdenddate:
                 if remaindays!=None:
-                    depends.enddependtask(channels,taskid, days,remaindays)
+                    enddependtask(channels,taskid, days,remaindays)
                     remainstatus = 1
             if taskstrtdt < holdstrtdt and taskenddt == holdenddate:
-                depends.enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid, days,remaindays)
             if taskstrtdt == holdstrtdt and taskenddt == holdenddate:
-                depends.startdependtask(channels,taskid, days,remaindays)
-                depends.enddependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid, days,remaindays)
 
-
-
-class depends:
+def startdependtask(channels, taskid, days, remaindays):
     documents = db.get_collection("task")
-    arrays=[]
-    def startdependtask(self,channels,taskid,days,remaindays):
-
-        print(taskid)
-        endepends,startdepends=None,None
-        dependslist = self.documents.find({"taskid": taskid}).distinct("startdepends")[0]
-        dependstartarray = dependslist.split(",")
-        for taskids in dependstartarray:
-            taskprogress = self.documents.find({"taskid": taskid}).distinct("taskprogress")[0]
-            taskfree = self.documents.find({"taskid": taskid}).distinct("freeslack")[0]
-            starttime = self.documents.find({"taskid": taskid}).distinct("starttime")[0]
-            endtime = self.documents.find({"taskid": taskid}).distinct("endtime")[0]
-            type = self.documents.find({"taskid": taskid}).distinct("type")[0]
-            status = self.documents.find({"taskid": taskid}).distinct("status")[0]
-            endepends = self.documents.find({"taskid": taskid}).distinct("enddepends")[0]
-            startdepends = self.documents.find({"taskid": taskid}).distinct("startdepends")[0]
-            if remaindays!=None and remaindays!=0:
-                if remaindays>taskfree:
-                    remaindays=remaindays-taskfree
-                    if status!="fine" and status!="finished":
-                        text = "task "+taskid+" is not in good status. So its risk to hold task for "+remaindays+" days."
+    arrays = []
+    count = 0
+    print(channels, taskid, days, remaindays)
+    endepends, startdepends = None, None
+    dependslist = documents.find({"taskid": taskid}).distinct("startdepends")[0]
+    dependstartarray = dependslist.split(",")
+    for taskids in dependstartarray:
+        taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
+        taskfree = documents.find({"taskid": taskid}).distinct("freeslack")[0]
+        starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
+        endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
+        type = documents.find({"taskid": taskid}).distinct("type")[0]
+        status = documents.find({"taskid": taskid}).distinct("status")[0]
+        endepends = documents.find({"taskid": taskid}).distinct("enddepends")[0]
+        startdepends = documents.find({"taskid": taskid}).distinct("startdepends")[0]
+        if remaindays != None and remaindays != 0:
+            if remaindays > taskfree:
+                remaindays = remaindays - taskfree
+                if status != "fine" and status != "finished":
+                    text = "task " + taskid + " is not in good status. So its risk to hold task for " + remaindays + " days."
+                    SlackCommunication.postMessege(channels, text)
+                    if type == "important":
+                        text = "Also task " + taskid + " is important tasks "
                         SlackCommunication.postMessege(channels, text)
-                        if type=="important":
-                            text = "Also task " + taskid + " is important tasks "
-                            SlackCommunication.postMessege(channels, text)
 
-            dicarray={
-                "taskids":taskids,
-                "parenttask":taskid,
-                "taskprogress":taskprogress,
+        dicarray = {
+                "taskids": taskids,
+                "parenttask": taskid,
+                "taskprogress": taskprogress,
                 "type": type,
                 "taskfree": taskfree,
                 "starttime": starttime,
@@ -329,87 +323,93 @@ class depends:
                 "endepends": endepends,
                 "startdepends": startdepends,
                 "remaindays": remaindays
-                }
-            self.arrays[self.count]=dicarray
-            if startdepends!=None:
-                dependstartarray = startdepends.split(",")
-                for starttaskids in dependstartarray:
-                    depends.startdependtask(self, starttaskids, days, remaindays)
-            if endepends!=None and remaindays>depends.periodCalculator(self,starttime,endtime):
-                dependendarray = endepends.split(",")
-                for endtaskids in dependendarray:
-                    depends.startdependtask(self, endtaskids, days, remaindays)
-            self.count=self.count+1
+        }
+        arrays[count] = dicarray
+        if startdepends != None:
+            dependstartarray = startdepends.split(",")
+            for starttaskids in dependstartarray:
+                startdependtask( starttaskids, days, remaindays)
+        if endepends != None and remaindays > periodCalculator( starttime, endtime):
+            dependendarray = endepends.split(",")
+            for endtaskids in dependendarray:
+                startdependtask( endtaskids, days, remaindays)
+        count = count + 1
 
-        return self.arrays
+    return arrays
 
-    def enddependtask(self,channels,taskid,days,remaindays):
-        dependslist = self.documents.find({"taskid": taskid}).distinct("enddepends")[0]
-        dependendarray = dependslist.split(",")
-        dependstartarray = dependslist.split(",")
-        for taskids in dependstartarray:
-            taskprogress = self.documents.find({"taskid": taskid}).distinct("taskprogress")[0]
-            taskfree = self.documents.find({"taskid": taskid}).distinct("freeslack")[0]
-            starttime = self.documents.find({"taskid": taskid}).distinct("starttime")[0]
-            endtime = self.documents.find({"taskid": taskid}).distinct("endtime")[0]
-            type = self.documents.find({"taskid": taskid}).distinct("type")[0]
-            status = self.documents.find({"taskid": taskid}).distinct("status")[0]
-            endepends = self.documents.find({"taskid": taskid}).distinct("enddepends")[0]
-            startdepends = self.documents.find({"taskid": taskid}).distinct("startdepends")[0]
-            if remaindays != None and remaindays!=0:
-                if remaindays > taskfree:
-                    remaindays = remaindays - taskfree
-                    if status != "fine":
-                        text = "task "+taskid+" is not in good status. So its risk to hold task for "+remaindays+" days."
+
+def enddependtask(channels, taskid, days, remaindays):
+    print(channels, taskid, days, remaindays)
+    documents = db.get_collection("task")
+    arrays = []
+    count=0
+    dependslist = documents.find({"taskid": taskid}).distinct("enddepends")[0]
+    dependendarray = dependslist.split(",")
+    dependstartarray = dependslist.split(",")
+    for taskids in dependstartarray:
+        taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
+        taskfree = documents.find({"taskid": taskid}).distinct("freeslack")[0]
+        starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
+        endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
+        type = documents.find({"taskid": taskid}).distinct("type")[0]
+        status = documents.find({"taskid": taskid}).distinct("status")[0]
+        endepends = documents.find({"taskid": taskid}).distinct("enddepends")[0]
+        startdepends = documents.find({"taskid": taskid}).distinct("startdepends")[0]
+        if remaindays != None and remaindays != 0:
+            if remaindays > taskfree:
+                remaindays = remaindays - taskfree
+                if status != "fine":
+                    text = "task " + taskid + " is not in good status. So its risk to hold task for " + remaindays + " days."
+                    SlackCommunication.postMessege(channels, text)
+                    if type == "important":
+                        text = "Also task " + taskid + " is important tasks "
                         SlackCommunication.postMessege(channels, text)
-                        if type == "important":
-                            text = "Also task " + taskid + " is important tasks "
-                            SlackCommunication.postMessege(channels, text)
 
-            dicarray = {"taskids": taskids,
-                        "taskprogress": taskprogress,
-                        "type": type,
-                        "taskfree": taskfree,
-                        "starttime": starttime,
-                        "endtime": endtime,
-                        "status": status,
-                        "endepends": endepends,
-                        "startdepends": startdepends,
-                        "remaindays": remaindays
-                        }
-            self.arrays[self.count] = dicarray
-            if startdepends != None:
-                dependstartarray = startdepends.split(",")
-                for starttaskids in dependstartarray:
-                    depends.startdependtask(self, starttaskids, days, remaindays)
-            if endepends != None:
-                dependendarray = endepends.split(",")
-                for endtaskids in dependendarray:
+        dicarray = {"taskids": taskids,
+                    "taskprogress": taskprogress,
+                    "type": type,
+                    "taskfree": taskfree,
+                    "starttime": starttime,
+                    "endtime": endtime,
+                    "status": status,
+                    "endepends": endepends,
+                    "startdepends": startdepends,
+                    "remaindays": remaindays
+                    }
+        arrays[count] = dicarray
+        if startdepends != None:
+            dependstartarray = startdepends.split(",")
+            for starttaskids in dependstartarray:
+                startdependtask(starttaskids, days, remaindays)
+        if endepends != None:
+            dependendarray = endepends.split(",")
+            for endtaskids in dependendarray:
+                startdependtask(endtaskids, days, remaindays)
+        count = count + 1
+    return arrays
 
-                    depends.startdependtask(self, endtaskids, days, remaindays)
-            self.count = self.count + 1
-        return self.arrays
 
-    def periodCalculator(self,starttimes,endtimes):
-        strt = starttimes.split("/")
-        end = endtimes.split("/")
-        if len(end) == 3 and len(strt) == 3:
-            strtyr = strt[0]
-            strtmon  = strt[1]
-            strtdt = strt[2]
-            endyr = end[0]
-            endmon = end[1]
-            endtdt = end[2]
-            yrs=endyr-strtyr
-            if endyr!=strtyr:
-                months=12-strtmon+endmon
-            else:
-                months=endmon-strtmon
-            if strtmon!=endmon:
-                days=30-strtdt+endtdt
-            else:
-                days=endtdt-strtdt
+def periodCalculator(starttimes, endtimes):
+    strt = starttimes.split("/")
+    end = endtimes.split("/")
+    if len(end) == 3 and len(strt) == 3:
+        strtyr = strt[0]
+        strtmon = strt[1]
+        strtdt = strt[2]
+        endyr = end[0]
+        endmon = end[1]
+        endtdt = end[2]
+        yrs = endyr - strtyr
+        if endyr != strtyr:
+            months = 12 - strtmon + endmon
+        else:
+            months = endmon - strtmon
+        if strtmon != endmon:
+            days = 30 - strtdt + endtdt
+        else:
+            days = endtdt - strtdt
 
-            totaldays=yrs*365+months*30+days
-            return totaldays
+        totaldays = yrs * 365 + months * 30 + days
+        return totaldays
+
 
