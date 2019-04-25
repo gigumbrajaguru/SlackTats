@@ -211,8 +211,6 @@ def taskforecast(taskid,startdate,days,channels):
 
 def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,taskstrtmon,
                  taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays):
-    print(taskid,holdstrtyr,holdstrtmon,holdstrtdt,taskstrtyr,taskstrtmon,
-                 taskstrtdt,holdendyr,holdendmonth,holdenddate,taskendyr,taskendmon,taskenddt,channels,days,remaindays)
     remainstatus = 0
     #############################################################################
     if taskstrtyr == holdstrtyr and taskstrtmon==holdstrtmon and taskstrtdt==holdstrtdt:
@@ -313,84 +311,38 @@ def startdependtask(channels, taskid, days, remaindays):
     documents = db.get_collection("task")
     arrays = []
     count = 0
-    print(channels, taskid, days, remaindays)
     endepends, startdepends = None, None
-    dependslist = documents.find({"taskid": taskid}).distinct("startdepends")[0]
-    dependstartarray = dependslist.split(",")
-    for taskids in dependstartarray:
-        taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
-        taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
-        starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
-        endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
-        type = documents.find({"taskid": taskid}).distinct("type")[0]
-        status = documents.find({"taskid": taskid}).distinct("status")[0]
-        endepends = documents.find({"taskid": taskid}).distinct("enddepends")[0]
-        startdepends = documents.find({"taskid": taskid}).distinct("startdepends")[0]
-        if remaindays != None and remaindays != 0:
-            if remaindays > taskfree:
+    print(taskid,remaindays)
+    dependslist = documents.find({"taskid": taskid}).distinct("startdepends")
+    if dependslist!=None and dependslist!=[]:
+        dependslist=dependslist[0]
+        dependstartarray = dependslist.split(",")
+        for taskids in dependstartarray:
+            taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
+            taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
+            starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
+            endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
+            type = documents.find({"taskid": taskid}).distinct("type")[0]
+            status = documents.find({"taskid": taskid}).distinct("status")[0]
+            endepends = documents.find({"taskid": taskid}).distinct("enddepends")
+            startdepends = documents.find({"taskid": taskid}).distinct("startdepends")
+            if endepends!=None and endepends!=[]:
+                endepends=endepends[0]
+            if startdepends!=None and startdepends!=[]:
+                startdepends=startdepends[0]
+            if remaindays != None and remaindays != 0:
                 remaindays = remaindays - taskfree
-                if status != "fine" and status != "finished":
-                    text = "task " + taskid + " is not in good status. So its risk to hold task for " + remaindays + " days."
-                    SlackCommunication.postMessege(channels, text)
-                    if type == "important":
-                        text = "Also task " + taskid + " is important tasks "
+                if remaindays > taskfree:
+                    if status != "fine" or status != "finished":
+                        text = "task " + taskid + " is not in good status. So its risk to hold task for " + str(remaindays) + " days."
                         SlackCommunication.postMessege(channels, text)
+                        if type == "important":
+                            text = "Also task " + taskid + " is important tasks "
+                            SlackCommunication.postMessege(channels, text)
 
-        dicarray = {
-                "taskids": taskids,
-                "parenttask": taskid,
-                "taskprogress": taskprogress,
-                "type": type,
-                "taskfree": taskfree,
-                "starttime": starttime,
-                "endtime": endtime,
-                "status": status,
-                "endepends": endepends,
-                "startdepends": startdepends,
-                "remaindays": remaindays
-        }
-        arrays[count] = dicarray
-        if startdepends != None:
-            dependstartarray = startdepends.split(",")
-            for starttaskids in dependstartarray:
-                startdependtask( starttaskids, days, remaindays)
-        if endepends != None and remaindays > periodCalculator( starttime, endtime):
-            dependendarray = endepends.split(",")
-            for endtaskids in dependendarray:
-                startdependtask( endtaskids, days, remaindays)
-        count = count + 1
-
-    return arrays
-
-
-def enddependtask(channels, taskid, days, remaindays):
-    print(channels, taskid, days, remaindays)
-    documents = db.get_collection("task")
-    arrays = []
-    count=0
-    dependslist = documents.find({"taskid": taskid}).distinct("enddepends")[0]
-    dependendarray = dependslist.split(",")
-    dependstartarray = dependslist.split(",")
-    for taskids in dependstartarray:
-        taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
-        taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
-        starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
-        endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
-        type = documents.find({"taskid": taskid}).distinct("type")[0]
-        status = documents.find({"taskid": taskid}).distinct("status")[0]
-        endepends = documents.find({"taskid": taskid}).distinct("enddepends")[0]
-        startdepends = documents.find({"taskid": taskid}).distinct("startdepends")[0]
-        if remaindays != None and remaindays != 0:
-            if remaindays > taskfree:
-                remaindays = remaindays - taskfree
-                if status != "fine":
-                    text = "task " + taskid + " is not in good status. So its risk to hold task for " + remaindays + " days."
-                    SlackCommunication.postMessege(channels, text)
-                    if type == "important":
-                        text = "Also task " + taskid + " is important tasks "
-                        SlackCommunication.postMessege(channels, text)
-
-        dicarray = {"taskids": taskids,
+            dicarray = {
+                    "taskids": taskids,
+                    "parenttask": taskid,
                     "taskprogress": taskprogress,
                     "type": type,
                     "taskfree": taskfree,
@@ -400,30 +352,89 @@ def enddependtask(channels, taskid, days, remaindays):
                     "endepends": endepends,
                     "startdepends": startdepends,
                     "remaindays": remaindays
-                    }
-        arrays[count] = dicarray
-        if startdepends != None:
-            dependstartarray = startdepends.split(",")
-            for starttaskids in dependstartarray:
-                startdependtask(starttaskids, days, remaindays)
-        if endepends != None:
-            dependendarray = endepends.split(",")
-            for endtaskids in dependendarray:
-                startdependtask(endtaskids, days, remaindays)
-        count = count + 1
-    return arrays
+            }
+            arrays.append(dicarray)
+            if startdepends != None and startdepends!=[]:
+                dependstartarray = startdepends.split(",")
+                for starttaskids in dependstartarray:
+                    startdependtask( channels,starttaskids, days, remaindays)
+            if endepends != None and endepends!=[] :
+                if periodCalculator(starttime, endtime)<remaindays or remaindays>taskfree:
+                    dependendarray = endepends.split(",")
+                    for endtaskids in dependendarray:
+                        startdependtask(channels, endtaskids, days, remaindays)
+            count = count + 1
+
+        return arrays
+
+
+def enddependtask(channels, taskid, days, remaindays):
+    print(taskid, remaindays)
+    documents = db.get_collection("task")
+    arrays = []
+    count=0
+    dependslist = documents.find({"taskid": taskid}).distinct("enddepends")
+    if dependslist!=None and dependslist!=[]:
+        dependslist=dependslist[0]
+        dependstartarray = dependslist.split(",")
+        for taskids in dependstartarray:
+            taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
+            taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
+            starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
+            endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
+            type = documents.find({"taskid": taskid}).distinct("type")[0]
+            status = documents.find({"taskid": taskid}).distinct("status")[0]
+            endepends = documents.find({"taskid": taskid}).distinct("enddepends")
+            startdepends = documents.find({"taskid": taskid}).distinct("startdepends")
+            if endepends!=None and endepends!=[]:
+                endepends=endepends[0]
+            if startdepends!=None and startdepends!=[]:
+                startdepends=startdepends[0]
+            if remaindays != None and remaindays != 0:
+                if remaindays > taskfree:
+                    remaindays = remaindays - taskfree
+                    if status != "fine" or status != "finished":
+                        text = "task " + taskid + " is not in good status. So its risk to hold task for " + str(remaindays) + " days."
+                        SlackCommunication.postMessege(channels, text)
+                        if type == "important":
+                            text = "Also task " + taskid + " is important tasks "
+                            SlackCommunication.postMessege(channels, text)
+
+            dicarray = {"taskids": taskids,
+                        "taskprogress": taskprogress,
+                        "type": type,
+                        "taskfree": taskfree,
+                        "starttime": starttime,
+                        "endtime": endtime,
+                        "status": status,
+                        "endepends": endepends,
+                        "startdepends": startdepends,
+                        "remaindays": remaindays
+                        }
+            arrays.append(dicarray)
+            if startdepends != None and startdepends!=[]:
+                dependstartarray = startdepends.split(",")
+                for starttaskids in dependstartarray:
+                    startdependtask(channels,starttaskids, days, remaindays)
+            if endepends != None and startdepends!=[]:
+                if periodCalculator(starttime, endtime) < remaindays or remaindays > taskfree:
+                    dependendarray = endepends.split(",")
+                    for endtaskids in dependendarray:
+                        startdependtask(channels,endtaskids, days, remaindays)
+            count = count + 1
+        return arrays
 
 
 def periodCalculator(starttimes, endtimes):
     strt = starttimes.split("/")
     end = endtimes.split("/")
     if len(end) == 3 and len(strt) == 3:
-        strtyr = strt[0]
-        strtmon = strt[1]
-        strtdt = strt[2]
-        endyr = end[0]
-        endmon = end[1]
-        endtdt = end[2]
+        strtyr = int(strt[0])
+        strtmon = int(strt[1])
+        strtdt = int(strt[2])
+        endyr = int(end[0])
+        endmon = int(end[1])
+        endtdt = int(end[2])
         yrs = endyr - strtyr
         if endyr != strtyr:
             months = 12 - strtmon + endmon
