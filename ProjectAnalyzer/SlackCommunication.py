@@ -6,11 +6,12 @@ sc = SlackClient(slack_token)
 
 
 def postMessege(channels,text):
-    sc.api_call(
-        "chat.postMessage",
-        channel=channels,
-        text=text
-        )
+    if text!=None:
+        sc.api_call(
+            "chat.postMessage",
+            channel=channels,
+            text=text
+            )
 
 def deleteMessege(channels,ts):
     sc.api_call(

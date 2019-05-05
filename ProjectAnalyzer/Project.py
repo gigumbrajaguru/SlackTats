@@ -1,11 +1,12 @@
+import datetime
 import re
 import shutil
-
 from slackclient import SlackClient
 import pymongo
 import os
 from git import Repo
 from ProjectAnalyzer import SlackCommunication
+from ProjectAnalyzer import Task
 from textblob import TextBlob
 from fuzzywuzzy import fuzz
 import nltk
@@ -96,21 +97,25 @@ def updateproject(dicts):
 
 def connectGithub(channels,managerid):
         documents = db.get_collection("project")
-        gitlink=documents.find({"managerid": managerid}).distinct("githublink")[0]
-        if gitlink != None:
-            if gitlink.split("//")[0]=="https:":
-                if os.path.exists("../Projects/rep"):
-                    shutil.rmtree("../Projects/rep")
-                Repo.clone_from(gitlink,"../Projects/rep")
-                repo = Repo("../Projects/rep")
-                if not repo.bare:
-                    commits = list(repo.iter_commits('master'))[:10000]
-                    for commit in commits:
-                        checkcommit(channels,commit,repo)
-                        pass
-                else:
-                    text = 'Repo description: Server problem'
-                    SlackCommunication.postMessege(channels, text)
+        try:
+            gitlink=documents.find({"managerid": managerid}).distinct("githublink")[0]
+            if gitlink != None:
+                if gitlink.split("//")[0]=="https:":
+                    if os.path.exists("../Projects/rep"):
+                        shutil.rmtree("../Projects/rep")
+                    Repo.clone_from(gitlink,"../Projects/rep")
+                    repo = Repo("../Projects/rep")
+                    if not repo.bare:
+                        commits = list(repo.iter_commits('master'))[:10000]
+                        for commit in commits:
+                            checkcommit(channels,commit,repo)
+                            pass
+                    else:
+                        text = 'Repo description: Server problem'
+                        SlackCommunication.postMessege(channels, text)
+        except:
+            text = 'Link github repository'
+            SlackCommunication.postMessege(channels, text)
 
 
 
@@ -222,8 +227,61 @@ def checkcommit(channels,commit,repo):
                                     istest = 10
                 commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
                 documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
+                if (commitcompletion ==100 ):
+                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "finished"}})
+                if(commitcompletion>90):
+                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "fine"}})
+                elif(commitcompletion>50 and commitcompletion<90):
+                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "working"}})
+                elif (commitcompletion < 50 ):
+                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "critical"}})
 
 
 
 
+def statusUpdater(dict):
+    text=None
+    projectdocuments = db.get_collection("project")
+    taskdocument=db.get_collection("task")
+    managerid = dict.get("user")
+    channels=dict.get("channel")
+    projectids = projectdocuments.find({"managerid": managerid}).distinct("projectid")[0]
+    taskdetailarray = taskdocument.find({"projectid": projectids}).distinct("taskid")
+    for taskids in taskdetailarray:
+        tasktime = taskdocument.find({"taskid": taskids}).distinct("endtime")[0]
+        taskstarttime = taskdocument.find({"taskid": taskids}).distinct("starttime")[0]
+        nows =str(datetime.datetime.now().date())
+        checkdate=nows.replace("-","/",2)
+        currentremain=Task.periodCalculator(checkdate,tasktime)
+        tasktimes=Task.periodCalculator(taskstarttime, tasktime)
+        ratio=currentremain/tasktimes
+        taskprogress = taskdocument.find({"taskid": taskids}).distinct("taskprogress")[0]
+        tasktype = taskdocument.find({"taskid": taskids}).distinct("type")[0]
+        if (taskprogress > 90 and taskprogress<100):
+            if ratio<1 and ratio>0.5:
+                if tasktype == "critical" or tasktype == "important":
+                    text = taskids + "is almost done but keep work on. " + tasktype + " task"
+            elif ratio<0.5:
+                if tasktype=="critical" or tasktype=="important":
+                    text=taskids+ "is almost done but keep work on. "+tasktype+" task"
+                    taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "working"}})
 
+        elif (taskprogress > 50 and taskprogress < 90):
+            if ratio < 1 and ratio > 0.5:
+                if tasktype == "critical" or tasktype == "important":
+                    text = taskids + "need full attention because " + tasktype + " task"
+
+            elif ratio < 0.5:
+                if tasktype == "critical" or tasktype == "important":
+                    text = taskids + "need full attention because " + tasktype + " task"
+                    taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "critical"}})
+        elif (taskprogress < 50):
+            if ratio < 1 and ratio > 0.5:
+                if tasktype == "critical" or tasktype == "important":
+                    text = taskids + "is almost done but keep work on. " + tasktype + " task"
+                    taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "working"}})
+            elif ratio < 0.5:
+                text = taskids + "is in reallly bad stage. its " + tasktype + " task"
+                taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "critical"}})
+
+        SlackCommunication.postMessege(channels,text)

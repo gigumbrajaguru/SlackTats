@@ -28,7 +28,7 @@ if sc.rtm_connect(with_team_state=False):
                 if array[0]=="-registerproject":
                     ProjectAnalyzer.register_Project(dict)
                 if array[0]=="-registergithub":
-                    ProjectAnalyzer.register_github(dict)
+                    ProjectAnalyzer.update_github(dict)
                 if array[0] == "-registerprojectmanager":
                     ProjectAnalyzer.register_ProjectManager(dict)
                 if array[0]== "-createtasks":
@@ -52,6 +52,7 @@ if sc.rtm_connect(with_team_state=False):
 
             if dict.get('type') == "user_typing":
                 ProjectAnalyzer.Project.connectGithub(dict.get('channel'), dict.get('user'))
+                ProjectAnalyzer.Project.statusUpdater(dict)
         time.sleep(1)
 else:
     print ("Connection Failed")

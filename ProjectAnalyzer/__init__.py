@@ -178,7 +178,6 @@ def register_Project(dict):
         startdate=None
         enddate=None
         totalslack=None
-        githubtoken=None
         array = msg.split(" ")
         for z in array:
             if z[0] != None and z[0] != " ":
@@ -193,7 +192,8 @@ def register_Project(dict):
                         enddate=array[count+1]
                     if z == "-totalslack":
                         totalslack=array[count+1]
-
+                    if z == "-totalslack":
+                        totalslack=array[count+1]
             count=count+1
         records = db.get_collection("project")
         projectids=projectid+user
@@ -293,7 +293,7 @@ def update_github(dict):
     channel=dict.get("channel")
     ts=dict.get("ts")
     array = msg.split(" ")
-    if checkUserRole(manager) and SlackCommunication.usercount()<2:
+    if checkUserRole(manager):
         for z in array:
             if z[0] != None and z[0] != " ":
                 if z[0] == "-":
@@ -307,7 +307,11 @@ def update_github(dict):
             SlackCommunication.postMessege(channel, text)
         else:
             if checkUserRole(manager) and githublink!=None:
+                githublink=githublink[1:]
+                githublink=githublink[:-1]
                 records.find_one_and_update({"managerid": manager}, {'$set': {"githublink": githublink,"location": "/var/www"}})
+                text = "Github linked"
+                SlackCommunication.postMessege(channel, text)
     else:
         text="Only manager can performe this command and need to configure at the beginning of project"
         SlackCommunication.postMessege(channel, text)
