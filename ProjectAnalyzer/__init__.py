@@ -204,7 +204,7 @@ def register_Project(dict):
             mydict = {"projectid": projectids, "projectname": projectname, "startdate": startdate, "enddate": enddate,"totalslack": totalslack,"managerid": user}
             id = records.insert_one(mydict)
             if id!=None:
-                text = "Project  " + projectname + "is connected"
+                text = "Project  " + projectname + " is connected"
                 channel = channels
                 SlackCommunication.postMessege(channel, text)
             else:

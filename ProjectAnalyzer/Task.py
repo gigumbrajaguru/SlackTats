@@ -80,7 +80,7 @@ def updatetask(dicts):
                     taskmongoupdate(channels, taskid, "taskcontent", taskcontent)
                 if z == "-type":
                     if array[count + 1] == "important" or array[count + 1] == "normal" or array[
-                        count + 1] == "critical" or array[count + 1] == "finished":
+                        count + 1] == "critical" :
                         type = array[count + 1]
                         taskmongoupdate(channels, taskid, "type", type)
                 if z == "-removedepend":

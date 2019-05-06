@@ -1,4 +1,28 @@
--createtasks -taskname go -taskid 123 -projectid 1 -freeslack 2 -startdate 2019/1/1 -enddate 2019/2/2 -type important
+
+
+-registerprojectmanager
+
+-registerproject -projectid ab1002 -projectname testproject -startdate 2019/1/1 -enddate 2019/1/16 -totalslack 6
+
+-createtasks -taskname go -taskid ab1002.01.001 -projectid ab1002 -freeslack 2 -startdate 2019/1/1 -enddate 2019/2/2 -type important
+
+-registergithub -githublink https://github.com/gigumbrajaguru/Simple_B.git
+
+-setdepends -maintask ab1002.01.001 -startdepends -endepends ab1002.01.002
+
+-updatetask -taskname go -taskid ab1002.01.001 -projectid ab1002 -freeslack 2 -startdate 2019/1/1 -enddate 2019/2/2 -type important
+
+-updateproject -projectid ab1002 -projectname testproject -startdate 2019/1/1 -enddate 2019/1/16 -totalslack 6 -managerid UBUF3BX36 -githublink https://github.com/gigumbrajaguru/Simple_B.git
+
+-register -location Sri Lanka -email g@gmail.com -fullname Gigum Bandara Rajaguru
+
+-forecast -taskid ab1002.01.001 -startdate 2019/1/3 -days 7
+
+-taskcontent -taskid ab1002.01.001 -projectid ab1002 #Detail for subtask one
+
+-checktasks -projectid ab1002
+
+-viewrepo
 
 
 
