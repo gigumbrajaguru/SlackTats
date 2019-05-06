@@ -1,4 +1,3 @@
-import os
 from slackclient import SlackClient
 
 slack_token = "xoxb-402757429986-412087740598-8bGVF1HoEKEdfQws9aNDTeUM"

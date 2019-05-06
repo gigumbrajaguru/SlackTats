@@ -22,6 +22,9 @@ def register_ProjectManager(dict):
         text = "User <@" + manager + "> assinged to Manage this project"
         channel = channel
         SlackCommunication.postMessege(channel,text)
+    elif records.find({"userid":manager,"roleid":"2"}).count()==1:
+        text = "User <@" + manager + "> already project manager"
+        SlackCommunication.postMessege(channel, text)
 
 
 def dateValidation(manager,projectid,starttime,endtime):
