@@ -35,7 +35,6 @@ def checkUserRole(manger):
 
 
 def projectmongoupdate(channels,key,point,updates,dicts):
-    record=None
     records = db.get_collection("project")
     if checkUserRole(dicts.get("user")):
         record = records.find_one_and_update({"projectid": key}, {'$set': {point: updates}})
@@ -54,7 +53,6 @@ def projectmongoupdate(channels,key,point,updates,dicts):
 
 
 def updateproject(dicts):
-    documents = db.get_collection("project")
     channels = dicts.get("channel")
     msg = dicts.get("text")
     count=0
@@ -245,43 +243,46 @@ def statusUpdater(dict):
     taskdocument=db.get_collection("task")
     managerid = dict.get("user")
     channels=dict.get("channel")
-    projectids = projectdocuments.find({"managerid": managerid}).distinct("projectid")[0]
-    taskdetailarray = taskdocument.find({"projectid": projectids}).distinct("taskid")
-    for taskids in taskdetailarray:
-        tasktime = taskdocument.find({"taskid": taskids}).distinct("endtime")[0]
-        taskstarttime = taskdocument.find({"taskid": taskids}).distinct("starttime")[0]
-        nows =str(datetime.datetime.now().date())
-        checkdate=nows.replace("-","/",2)
-        currentremain=Task.periodCalculator(checkdate,tasktime)
-        tasktimes=Task.periodCalculator(taskstarttime, tasktime)
-        ratio=currentremain/tasktimes
-        taskprogress = taskdocument.find({"taskid": taskids}).distinct("taskprogress")[0]
-        tasktype = taskdocument.find({"taskid": taskids}).distinct("type")[0]
-        if (taskprogress > 90 and taskprogress<100):
-            if ratio<1 and ratio>0.5:
-                if tasktype == "critical" or tasktype == "important":
-                    text = taskids + "is almost done but keep work on. " + tasktype + " task"
-            elif ratio<0.5:
-                if tasktype=="critical" or tasktype=="important":
-                    text=taskids+ "is almost done but keep work on. "+tasktype+" task"
-                    taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "working"}})
+    projectids = projectdocuments.find({"managerid": managerid}).distinct("projectid")
+    if projectids != [] :
+        projectids = projectids[0]
+        taskdetailarray = taskdocument.find({"projectid": projectids}).distinct("taskid")
+        if taskdetailarray!=[]:
+            for taskids in taskdetailarray:
+                tasktime = taskdocument.find({"taskid": taskids}).distinct("endtime")[0]
+                taskstarttime = taskdocument.find({"taskid": taskids}).distinct("starttime")[0]
+                nows =str(datetime.datetime.now().date())
+                checkdate=nows.replace("-","/",2)
+                currentremain=Task.periodCalculator(checkdate,tasktime)
+                tasktimes=Task.periodCalculator(taskstarttime, tasktime)
+                ratio=currentremain/tasktimes
+                taskprogress = int(taskdocument.find({"taskid": taskids}).distinct("taskprogress")[0])
+                tasktype = taskdocument.find({"taskid": taskids}).distinct("type")[0]
+                if (taskprogress > 90 and taskprogress<100):
+                    if ratio<1 and ratio>0.5:
+                        if tasktype == "critical" or tasktype == "important":
+                            text = taskids + "is almost done but keep work on. " + tasktype + " task"
+                    elif ratio<0.5:
+                        if tasktype=="critical" or tasktype=="important":
+                            text=taskids+ "is almost done but keep work on. "+tasktype+" task"
+                            taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "working"}})
 
-        elif (taskprogress > 50 and taskprogress < 90):
-            if ratio < 1 and ratio > 0.5:
-                if tasktype == "critical" or tasktype == "important":
-                    text = taskids + "need full attention because " + tasktype + " task"
+                elif (taskprogress > 50 and taskprogress < 90):
+                    if ratio < 1 and ratio > 0.5:
+                        if tasktype == "critical" or tasktype == "important":
+                            text = taskids + "need full attention because " + tasktype + " task"
 
-            elif ratio < 0.5:
-                if tasktype == "critical" or tasktype == "important":
-                    text = taskids + "need full attention because " + tasktype + " task"
-                    taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "critical"}})
-        elif (taskprogress < 50):
-            if ratio < 1 and ratio > 0.5:
-                if tasktype == "critical" or tasktype == "important":
-                    text = taskids + "is almost done but keep work on. " + tasktype + " task"
-                    taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "working"}})
-            elif ratio < 0.5:
-                text = taskids + "is in reallly bad stage. its " + tasktype + " task"
-                taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "critical"}})
+                    elif ratio < 0.5:
+                        if tasktype == "critical" or tasktype == "important":
+                            text = taskids + "need full attention because " + tasktype + " task"
+                            taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "critical"}})
+                elif (taskprogress < 50):
+                    if ratio < 1 and ratio > 0.5:
+                        if tasktype == "critical" or tasktype == "important":
+                            text = taskids + "is almost done but keep work on. " + tasktype + " task"
+                            taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "working"}})
+                    elif ratio < 0.5:
+                        text = taskids + "is in reallly bad stage. its " + tasktype + " task"
+                        taskdocument.find_one_and_update({"taskid": taskids}, {'$set': {"status": "critical"}})
 
-        SlackCommunication.postMessege(channels,text)
+                SlackCommunication.postMessege(channels,text)

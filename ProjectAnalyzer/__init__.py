@@ -50,6 +50,7 @@ def dateValidation(manager,projectid,starttime,endtime):
         taskendyr = int(taskendtime[0])
         taskendmon = int(taskendtime[1])
         taskendtdt = int(taskendtime[2])
+
         if strtyr<taskstrtyr and taskendyr<endyr:
             return True
         if strtyr<taskstrtyr and taskendyr==endyr and taskendmon<endmon:
@@ -110,6 +111,8 @@ def periodValidation(startdate,enddate,channel):
             text = "Please check input again"
             channel = channel
             SlackCommunication.postMessege(channel, text)
+            return False
+
     else:
         text = "Please check input commands again"
         channel = channel
@@ -125,6 +128,7 @@ def create_Task(dict):
         starttime=None
         endtime=None
         type=None
+        taskcontent=None
         msg = dict.get("text")
         array = msg.split(" ")
 
@@ -149,11 +153,9 @@ def create_Task(dict):
                         if array[count + 1]=="important" or array[count + 1]=="normal" or array[count + 1]=="critical":
                             type = array[count + 1]
             count = count + 1
-
-
         if dateValidation(manager,projectid,starttime,endtime) and periodValidation(starttime,endtime,channel):
-
             records = db.get_collection("task")
+            print("x")
             mydict = {"taskname": taskname , "taskid": taskid, "projectid": projectid, "taskprogress": "0",
                       "freeslack": freeslack, "starttime": starttime, "endtime": endtime, "type": type, "status": "fine","taskcontent":taskcontent}
             id = records.insert_one(mydict)
@@ -199,9 +201,8 @@ def register_Project(dict):
                         totalslack=array[count+1]
             count=count+1
         records = db.get_collection("project")
-        projectids=projectid+user
         if periodValidation(startdate,enddate,channels):
-            mydict = {"projectid": projectids, "projectname": projectname, "startdate": startdate, "enddate": enddate,"totalslack": totalslack,"managerid": user}
+            mydict = {"projectid": projectid, "projectname": projectname, "startdate": startdate, "enddate": enddate,"totalslack": totalslack,"managerid": user}
             id = records.insert_one(mydict)
             if id!=None:
                 text = "Project  " + projectname + " is connected"

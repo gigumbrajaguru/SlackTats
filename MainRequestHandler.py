@@ -1,7 +1,6 @@
 import time
 import ProjectAnalyzer
 import UserManager
-
 from slackclient import SlackClient
 
 # Developer : Gigum Bandara Rajaguru
@@ -10,8 +9,8 @@ from slackclient import SlackClient
 slack_token = "xoxb-402757429986-412087740598-8bGVF1HoEKEdfQws9aNDTeUM"
 sc = SlackClient(slack_token)
 
-if sc.rtm_connect(with_team_state=False):
-    while sc.server.connected is True:
+if sc.rtm_connect():
+    while sc.server.connected is False:
         data=sc.rtm_read()
         if len(data) == 1:
             dict=data.pop(0)
@@ -52,6 +51,7 @@ if sc.rtm_connect(with_team_state=False):
             if dict.get('type') == "user_typing":
                 ProjectAnalyzer.Project.connectGithub(dict.get('channel'), dict.get('user'))
                 ProjectAnalyzer.Project.statusUpdater(dict)
+
         time.sleep(1)
 else:
     print ("Connection Failed")
