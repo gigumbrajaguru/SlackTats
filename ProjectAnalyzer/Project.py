@@ -12,6 +12,7 @@ from fuzzywuzzy import fuzz
 import nltk
 
 
+
 nltk.download('wordnet')
 nltk.download("punkt")
 connection=pymongo.MongoClient("mongodb://localhost:27017/")
@@ -95,49 +96,62 @@ def updateproject(dicts):
 
 def connectGithub(channels,managerid):
         documents = db.get_collection("project")
-        try:
-            gitlink=documents.find({"managerid": managerid}).distinct("githublink")[0]
-            if gitlink != None:
-                if gitlink.split("//")[0]=="https:":
-                    if os.path.exists("../Projects/rep"):
-                        shutil.rmtree("../Projects/rep")
-                    Repo.clone_from(gitlink,"../Projects/rep")
-                    repo = Repo("../Projects/rep")
-                    if not repo.bare:
-                        commits = list(repo.iter_commits('master'))[:10000]
-                        for commit in commits:
-                            checkcommit(channels,commit,repo)
-                            pass
-                    else:
-                        text = 'Repo description: Server problem'
-                        SlackCommunication.postMessege(channels, text)
-        except:
-            text = 'Link github repository'
-            SlackCommunication.postMessege(channels, text)
+        paths="../Projects/rep"
+        if checkUserRole(managerid):
 
+                gitlink = documents.find({"managerid": managerid}).distinct("githublink")[0]
+                if gitlink != None:
+                    if gitlink.split("//")[0] == "https:":
+                        if os.path.exists(paths):
+                            repo = Repo(paths)
+                            repo.remotes.origin.pull()
+                            print("repository updated")
+                        else:
+                            Repo.clone_from(gitlink, paths)
+                        repo = Repo(paths)
+                        if not repo.bare:
+                            commits = list(repo.iter_commits('master'))[:10000]
+                            for commit in commits:
+                                checkcommit(channels, commit, repo)
+                                pass
+                        else:
+                            text = 'Repo description: Server problem'
+                            SlackCommunication.postMessege(channels, text)
+            #except:
+            #    text = 'Link github first'
+            #    SlackCommunication.postMessege(channels, text)
 
 
 def printrepo(dicts):
     managerid=dicts.get("user")
     channels = dicts.get("channel")
     documents = db.get_collection("project")
-    gitlink = documents.find({"managerid": managerid}).distinct("githublink")[0]
-    if gitlink != None:
-        if gitlink.split("//")[0] == "https:":
-            if os.path.exists("../Projects/rep"):
-                shutil.rmtree("../Projects/rep")
-            Repo.clone_from(gitlink, "../Projects/rep")
-            repo = Repo("../Projects/rep")
-            if not repo.bare:
-                text = 'Repo description: {}'.format(repo.description)
-                SlackCommunication.postMessege(channels, text)
-                text = 'Repo active branch is {}'.format(repo.active_branch)
-                SlackCommunication.postMessege(channels, text)
-                for remote in repo.remotes:
-                    text = 'Remote named "{}" with URL "{}"'.format(remote, remote.url)
+    paths = "../Projects/rep"
+    try:
+        gitlink = documents.find({"managerid": managerid}).distinct("githublink")[0]
+        if gitlink != None:
+            if gitlink.split("//")[0] == "https:":
+                if os.path.exists(paths):
+                    repo = Repo(paths)
+                    repo.remotes.origin.pull()
+                    print("repository updated")
+                else:
+                    Repo.clone_from(gitlink, paths)
+                repo = Repo(paths)
+
+                if not repo.bare:
+                    text = 'Repo description: {}'.format(repo.description)
                     SlackCommunication.postMessege(channels, text)
-                text = 'Last commit for repo is {}.'.format(str(repo.head.commit.hexsha))
-                SlackCommunication.postMessege(channels, text)
+                    text = 'Repo active branch is {}'.format(repo.active_branch)
+                    SlackCommunication.postMessege(channels, text)
+                    for remote in repo.remotes:
+                        text = 'Remote named "{}" with URL "{}"'.format(remote, remote.url)
+                        SlackCommunication.postMessege(channels, text)
+                    text = 'Last commit for repo is {}.'.format(str(repo.head.commit.hexsha))
+                    SlackCommunication.postMessege(channels, text)
+    except:
+        text = 'Connection problem'
+        SlackCommunication.postMessege(channels, text)
 
 
 
@@ -177,9 +191,10 @@ def checkcommit(channels,commit,repo):
 
 
         if projectid != None and taskid != None and taskname != None:
-            taskcontentarray = \
-            documents.find({"taskname": taskname, "taskid": taskid, "projectid": projectid}).distinct("taskobjectives")[
-                0].split(" #")
+            taskcontentarray = documents.find({"taskname": taskname, "taskid": taskid, "projectid": projectid}).distinct("taskcontent")
+            if taskcontentarray!=[] and taskcontentarray!=None:
+                print(taskcontentarray)
+                taskcontentarray=taskcontentarray[0].split(" #")
             checkedcommits = projectdocuments.find({"projectid": projectid}).distinct("checkedcommits")
 
         elif globalprojectid!=None:
@@ -243,8 +258,8 @@ def statusUpdater(dict):
     taskdocument=db.get_collection("task")
     managerid = dict.get("user")
     channels=dict.get("channel")
-    projectids = projectdocuments.find({"managerid": managerid}).distinct("projectid")
-    if projectids != [] :
+    projectids = projectdocuments.find({"managerid": managerid},{"roleid":"2"}).distinct("projectid")
+    if projectids != [] and  projectids!=None:
         projectids = projectids[0]
         taskdetailarray = taskdocument.find({"projectid": projectids}).distinct("taskid")
         if taskdetailarray!=[]:

@@ -313,7 +313,7 @@ def update_github(dict):
             if checkUserRole(manager) and githublink!=None:
                 githublink=githublink[1:]
                 githublink=githublink[:-1]
-                records.find_one_and_update({"managerid": manager}, {'$set': {"githublink": githublink,"location": "/var/www"}})
+                records.find_one_and_update({"managerid": manager}, {'$set': {"githublink": githublink}})
                 text = "Github linked"
                 SlackCommunication.postMessege(channel, text)
     else:

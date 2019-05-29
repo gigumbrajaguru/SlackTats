@@ -8,8 +8,9 @@ from slackclient import SlackClient
 
 slack_token = "xoxb-402757429986-412087740598-8bGVF1HoEKEdfQws9aNDTeUM"
 sc = SlackClient(slack_token)
-
+statuscheckvalue=1000
 if sc.rtm_connect():
+    typecount=0
     while sc.server.connected is False:
         data=sc.rtm_read()
         if len(data) == 1:
@@ -49,8 +50,11 @@ if sc.rtm_connect():
                 if array[0] == "-viewrepo":
                     ProjectAnalyzer.Project.printrepo(dict)
             if dict.get('type') == "user_typing":
+                typecount=typecount+1
                 ProjectAnalyzer.Project.connectGithub(dict.get('channel'), dict.get('user'))
-                ProjectAnalyzer.Project.statusUpdater(dict)
+                if(typecount>statuscheckvalue):
+                    ProjectAnalyzer.Project.statusUpdater(dict)
+                    typecount=0
 
         time.sleep(1)
 else:
