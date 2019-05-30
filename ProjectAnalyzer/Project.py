@@ -184,16 +184,10 @@ def checkcommit(channels,commit,repo):
                 if str(commit.hexsha) == checkedcommit:
                     check = 1
                     break
-            if check==0:
-                projectdocuments.update({"projectid": globalprojectid},
-                                        {'$push': {"checkedcommits": str(commit.hexsha)}})
-
-
 
         if projectid != None and taskid != None and taskname != None:
             taskcontentarray = documents.find({"taskname": taskname, "taskid": taskid, "projectid": projectid}).distinct("taskcontent")
             if taskcontentarray!=[] and taskcontentarray!=None:
-                print(taskcontentarray)
                 taskcontentarray=taskcontentarray[0].split(" #")
             checkedcommits = projectdocuments.find({"projectid": projectid}).distinct("checkedcommits")
 
@@ -202,52 +196,60 @@ def checkcommit(channels,commit,repo):
             SlackCommunication.postMessege(channels, text)
 
 
-    if checkedcommits != [] and checkedcommits != None:
-        for checkedcommit in checkedcommits:
-            if str(commit.hexsha) == checkedcommit:
-                commitstatus = 1
-                break
-    else:
-        if commitstatus == 0:
-            commitscontent=None
-            completedsubtasks,counts=0,0
-            count,istest=0,0
-            if taskcontentarray != [] and taskcontentarray != None:
-                for y in range(6, len(commitarray)):
-                    if commitarray[y] != None and commitarray[y] != " " and commitarray[y] != "":
-                        commitcontent = commitcontent+" "+commitarray[y]
-                numberarray=re.findall(r'\b\d+\b',commitcontent)
-                for num in range(0,len(numberarray)-1):
-                    splt=str(numberarray[count])+"."
-                    spltl=str(numberarray[count+1]) + "."
-                    contentfilter=commitcontent.split(splt)
-                    commitscontent=contentfilter[1].split(spltl)
-                    count = count + 1
-                if commitscontent!=None:
-                    for rep in taskcontentarray:
-                        if rep != '':
-                            counts = counts + 1
-                            for turns in commitscontent:
-                                ratio = fuzz.ratio(str(turns),str(rep))
-                                if ratio ==100:
-                                    completedsubtasks = completedsubtasks + 1
-                                elif TextBlob(turns).words.count('Completed') > 0 and ratio>59 :
-                                    completedsubtasks = completedsubtasks + 1
-                                elif TextBlob(turns).words.count('Finished') > 0 and ratio > 59:
-                                    completedsubtasks = completedsubtasks + 1
-                                if TextBlob(turns).words.count('tested')> 1 or TextBlob(
-                                        turns).words.count('verified') > 1:
-                                    istest = 10
-                commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
-                documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
-                if (commitcompletion ==100 ):
-                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "finished"}})
-                if(commitcompletion>90):
-                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "fine"}})
-                elif(commitcompletion>50 and commitcompletion<90):
-                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "working"}})
-                elif (commitcompletion < 50 ):
-                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "critical"}})
+        if checkedcommits != [] and checkedcommits != None:
+            for checkedcommit in checkedcommits:
+                if str(commit.hexsha) == checkedcommit:
+                    commitstatus = 1
+                    break
+        else:
+            if commitstatus == 0:
+                commitscontent=None
+                completedsubtasks,counts=0,0
+                count,istest=0,0
+                if taskcontentarray != [] and taskcontentarray != None:
+                    for y in range(7, len(commitarray)):
+                        if commitarray[y] != None and commitarray[y] != " " and commitarray[y] != "":
+                            commitcontent = commitcontent+" "+commitarray[y]
+                    numberarray=re.findall(r'\b\d+\b',commitcontent)
+                    for num in range(0,len(numberarray)-1):
+                        splt=str(numberarray[count])+"."
+                        spltl=str(numberarray[count+1]) + "."
+                        contentfilter=commitcontent.split(splt)
+                        commitscontent=contentfilter[1].split(spltl)
+                        count = count + 1
+                    if commitscontent!=None:
+                        for rep in taskcontentarray:
+                            if rep != '':
+                                counts = counts + 1
+                                for turns in commitscontent:
+                                    if turns!='':
+                                        ratio = fuzz.ratio(str(turns),str(rep))
+                                        print(ratio)
+                                        if ratio ==100:
+                                            completedsubtasks = completedsubtasks + 1
+                                        elif TextBlob(turns).words.count('Completed') > 0 and ratio>59 :
+                                            completedsubtasks = completedsubtasks + 1
+                                        elif TextBlob(turns).words.count('Finished') > 0 and ratio > 59:
+                                            completedsubtasks = completedsubtasks + 1
+                                        if TextBlob(turns).words.count('tested')> 1 or TextBlob(
+                                                turns).words.count('verified') > 1:
+                                            istest = 10
+                    if completedsubtasks>0 and counts>0:
+                        commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
+                        documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
+                        if (commitcompletion ==100 ):
+                            documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "finished"}})
+                        if(commitcompletion>90):
+                            documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "fine"}})
+                        elif(commitcompletion>50 and commitcompletion<90):
+                            documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "working"}})
+                        elif (commitcompletion < 50 ):
+                             documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "critical"}})
+            if check == 0:
+                projectdocuments.update({"projectid": projectid},
+                                        {'$push': {"checkedcommits": str(commit.hexsha)}})
+
+
 
 
 
