@@ -98,7 +98,7 @@ def connectGithub(channels,managerid):
         documents = db.get_collection("project")
         paths="../Projects/rep"
         if checkUserRole(managerid):
-
+            try:
                 gitlink = documents.find({"managerid": managerid}).distinct("githublink")[0]
                 if gitlink != None:
                     if gitlink.split("//")[0] == "https:":
@@ -117,9 +117,9 @@ def connectGithub(channels,managerid):
                         else:
                             text = 'Repo description: Server problem'
                             SlackCommunication.postMessege(channels, text)
-            #except:
-            #    text = 'Link github first'
-            #    SlackCommunication.postMessege(channels, text)
+            except:
+                text = 'Link github first'
+                SlackCommunication.postMessege(channels, text)
 
 
 def printrepo(dicts):

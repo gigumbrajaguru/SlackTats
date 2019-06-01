@@ -1,5 +1,5 @@
 import re
-
+from ProjectAnalyzer import checkUserRole
 from slackclient import SlackClient
 import pymongo
 from ProjectAnalyzer import SlackCommunication,Project,Task
@@ -57,3 +57,53 @@ def rightEmail(email):
             return False
     else:
         return False
+
+def workassigner(dict):
+    id,userid=None,None
+    count=0
+    taskids=""
+    taskvalidate,isvalidate=False,True
+    user = dict.get("user")
+    records = db.get_collection("user")
+    channel = dict.get("channel")
+    msg = dict.get("text")
+    array = msg.split(" ")
+    for z in array:
+        if z[0] == "-":
+            if z == "-userid":
+                userid = array[count + 1]
+            if z == "-tasksid":
+                for countnumber in range(count+1,len(array)):
+                    taskids = taskids+" "+str(array[countnumber])
+        count = count + 1
+
+    if taskids!="":
+        checktaskid = taskids.split(" ")
+        for checks in checktaskid:
+            if checks!="" and checks!=" " and checks!=None:
+                isvalidtask = rightTask(checks)
+                if isvalidtask==False:
+                    isvalidate=False
+                    break
+        if isvalidate and checkUserRole(user):
+            id = records.find_one_and_update({"userid": userid}, {'$set': {"allocatedtasks": taskids}})
+            print(id)
+        if id != None:
+            text = "<@" + user + "> asssigned to do " + taskids + "."
+            channel = channel
+            SlackCommunication.postMessege(channel, text)
+        else:
+            text = "Assigning failed"
+            channel = channel
+            SlackCommunication.postMessege(channel, text)
+
+
+def rightTask(taskid):
+    check = None
+    records = db.get_collection("task")
+    check = records.find({"taskid": taskid}).distinct("taskid")
+    if check!=None and check!=[]:
+        return True
+    else:
+        return False
+

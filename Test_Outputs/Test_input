@@ -3,11 +3,11 @@
 
 -registerprojectmanager
 
--registerproject -projectid ab1002 -projectname testproject -startdate 2019/1/1 -enddate 2019/1/16 -totalslack 6
+-registerproject -projectid ab1002 -projectname testproject -startdate 2019/5/30 -enddate 2019/6/30 -totalslack 9
 
 -createtasks -taskname go -taskid ab1002.01.001 -projectid ab1002 -freeslack 2 -startdate 2019/1/1 -enddate 2019/2/2 -type important
 
--registergithub -githublink https://github.com/gigumbrajaguru/SlackTatsTest.git
+-registergithub -githublink https://github.com/gigumbrajaguru/Test.git
 
 -setdepends -maintask ab1002.01.001 -startdepends ab1002.03.001 -endepends ab1002.02.001
 
@@ -17,7 +17,7 @@
 
 -forecast -taskid ab1002.01.001 -startdate 2019/1/3 -days 7
 
--taskcontent -taskid ab1002.01.001 -projectid ab1002 #Detail for subtask one
+-taskcontent -taskid ab1002.01.001 -projectid ab1002 #task read. #calculating progress.
 
 -checktasks -projectid ab1002
 

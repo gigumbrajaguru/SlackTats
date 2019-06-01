@@ -158,55 +158,56 @@ def taskforecast(taskid,startdate,days,channels):
             endepend=endepends[0]
         if startdepends!=None:
             startdepend=startdepends[0]
+
+        if (days>taskfree):
+            remaindays=days-taskfree
+
+        holdtarttime = startdate.split("/")
+        holdstrtyr = int(holdtarttime[0])
+        holdstrtmon = int(holdtarttime[1])
+        holdstrtdt = int(holdtarttime[2])
+
+        taskstarttime = starttime.split("/")
+        taskstrtyr = int(taskstarttime[0])
+        taskstrtmon = int(taskstarttime[1])
+        taskstrtdt = int(taskstarttime[2])
+
+        taskendtime = endtime.split("/")
+        taskendyr = int(taskendtime[0])
+        taskendmon = int(taskendtime[1])
+        taskenddt = int(taskendtime[2])
+        holdendyr=holdstrtyr
+        holdendmonth=holdstrtmon
+        holdenddate=holdstrtdt
+        if (holdstrtdt+days)>30 and days<30:
+            holdenddate=days-(30-holdstrtdt)
+            if((holdstrtmon+1)<12):
+                holdendmonth=holdstrtmon+1
+            else:
+                holdendyr=holdstrtyr+1
+                holdendmonth=1
+        elif (holdstrtdt+days)<30:
+            holdenddate = holdstrtdt+days
+        elif (holdstrtdt+days)>30 and days>30:
+            months=math.floor(days/30)
+            xdays = days - months * 30
+            if months>12:
+                years=math.floor(months/12)
+                xmonths=months-years*12
+                holdendyr=holdstrtyr+years
+                holdendmonth=holdstrtmon+xmonths
+                holdenddate=holdstrtdt+xdays
+                if holdendmonth>12:
+                    holdendyr=holdendyr+1
+                    holdendmonth=xmonths-(12-holdstrtmon)
+                if holdenddate>30:
+                    holdendmonth=holdendmonth+1
+                    holdenddate=xdays-(30-holdstrtdt)
+        blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,
+                     taskstrtmon,taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays)
     except:
         text = "Problem in task forecast"
         SlackCommunication.postMessege(channels, text)
-    if (days>taskfree):
-        remaindays=days-taskfree
-
-    holdtarttime = startdate.split("/")
-    holdstrtyr = int(holdtarttime[0])
-    holdstrtmon = int(holdtarttime[1])
-    holdstrtdt = int(holdtarttime[2])
-
-    taskstarttime = starttime.split("/")
-    taskstrtyr = int(taskstarttime[0])
-    taskstrtmon = int(taskstarttime[1])
-    taskstrtdt = int(taskstarttime[2])
-
-    taskendtime = endtime.split("/")
-    taskendyr = int(taskendtime[0])
-    taskendmon = int(taskendtime[1])
-    taskenddt = int(taskendtime[2])
-    holdendyr=holdstrtyr
-    holdendmonth=holdstrtmon
-    holdenddate=holdstrtdt
-    if (holdstrtdt+days)>30 and days<30:
-        holdenddate=days-(30-holdstrtdt)
-        if((holdstrtmon+1)<12):
-            holdendmonth=holdstrtmon+1
-        else:
-            holdendyr=holdstrtyr+1
-            holdendmonth=1
-    elif (holdstrtdt+days)<30:
-        holdenddate = holdstrtdt+days
-    elif (holdstrtdt+days)>30 and days>30:
-        months=math.floor(days/30)
-        xdays = days - months * 30
-        if months>12:
-            years=math.floor(months/12)
-            xmonths=months-years*12
-            holdendyr=holdstrtyr+years
-            holdendmonth=holdstrtmon+xmonths
-            holdenddate=holdstrtdt+xdays
-            if holdendmonth>12:
-                holdendyr=holdendyr+1
-                holdendmonth=xmonths-(12-holdstrtmon)
-            if holdenddate>30:
-                holdendmonth=holdendmonth+1
-                holdenddate=xdays-(30-holdstrtdt)
-    blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,
-                 taskstrtmon,taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays)
 
 
 def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,taskstrtmon,

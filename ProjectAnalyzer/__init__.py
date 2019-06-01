@@ -336,7 +336,7 @@ def taskContent(dict):
                 arraycontent.append(array[x])
                 objectives=" ".join(arraycontent)
             record = records.find_one_and_update({"taskid": array[2],"projectid":array[4]}, {
-                '$set': {"taskobjectives": objectives}})
+                '$set': {"taskcontent": objectives}})
             text="Data updated"
             SlackCommunication.postMessege(channel,text)
 
