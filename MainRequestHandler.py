@@ -52,6 +52,8 @@ if sc.rtm_connect():
                         ProjectAnalyzer.Project.printrepo(dict)
                     if array[0] == "-workassigner":
                         UserManager.workassigner(dict)
+                    if array[0] == "-deleteuser":
+                        UserManager.deleteUser(dict)
                 if dict.get('type') == "user_typing":
                     typecount = typecount + 1
                     ProjectAnalyzer.Project.connectGithub(dict.get('channel'), dict.get('user'))

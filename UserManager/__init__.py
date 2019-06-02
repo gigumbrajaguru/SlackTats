@@ -1,5 +1,5 @@
 import re
-from ProjectAnalyzer import checkUserRole
+from ProjectAnalyzer import checkUserRole,Task
 from slackclient import SlackClient
 import pymongo
 from ProjectAnalyzer import SlackCommunication,Project,Task
@@ -21,6 +21,13 @@ def registration(dict):
                 location = array[count + 1]
             if z == "-email":
                 email = array[count + 1]
+                try:
+                    email = email.split("|")[1]
+                    email = email[:-1]
+                except:
+                    email=""
+                    text = "Please check email domain"
+                    SlackCommunication.postMessege(channel, text)
             if z == "-fullname":
                 fullname = array[count + 1]
         count = count + 1
@@ -31,25 +38,23 @@ def registration(dict):
             id = records.insert_one(mydict)
             if id != None:
                 text = "<@" + user + "> registered to system."
-                channel = channel
                 SlackCommunication.postMessege(channel, text)
             else:
                 text = "Registration failed"
-                channel = channel
                 SlackCommunication.postMessege(channel, text)
         else:
             text = "Please check email again"
-            channel = channel
             SlackCommunication.postMessege(channel, text)
+    else:
+        text = "You should set input parameters with values"
+        SlackCommunication.postMessege(channel, text)
 
 def rightEmail(email):
-    email=email.split("|")[1].split(">")[0]
     checkemaillevelone=email.split("@")
     if (len(checkemaillevelone)==2):
         checkemailleveltwo=checkemaillevelone[1].split(".")
         if(len(checkemailleveltwo)==2):
-            regex = re.compile('[@_!#$%^&*()<>?/\|}{~:]')
-            if (regex.search(checkemaillevelone[0]) == None and regex.search(checkemailleveltwo[0]) == None and regex.search(checkemailleveltwo[1])==None):
+            if (bool(re.search('[a-zA-Z]',checkemaillevelone[0])) and bool(re.search('[a-zA-Z]',checkemailleveltwo[0]))  and bool(re.search('[a-zA-Z]',checkemailleveltwo[1]))):
                 return True
             else:
                 return False
@@ -81,7 +86,7 @@ def workassigner(dict):
         checktaskid = taskids.split(" ")
         for checks in checktaskid:
             if checks!="" and checks!=" " and checks!=None:
-                isvalidtask = rightTask(checks)
+                isvalidtask = Task.rightTask(checks)
                 if isvalidtask==False:
                     isvalidate=False
                     break
@@ -98,12 +103,27 @@ def workassigner(dict):
             SlackCommunication.postMessege(channel, text)
 
 
-def rightTask(taskid):
-    check = None
-    records = db.get_collection("task")
-    check = records.find({"taskid": taskid}).distinct("taskid")
-    if check!=None and check!=[]:
-        return True
-    else:
-        return False
 
+
+def deleteUser(dict):
+    user = dict.get("user")
+    count=0
+    userid=None
+    channel = dict.get("channel")
+    msg = dict.get("text")
+    array = msg.split(" ")
+    for z in array:
+        if z[0] == "-":
+            if z == "-userid":
+                userid = array[count + 1]
+        count = count + 1
+    records = db.get_collection("user")
+    if userid != None and checkUserRole(user):
+        userdetail = {"userid": userid }
+        check=records.delete_one(userdetail).deleted_count
+        if check>0:
+            text = "<@" + user + "> Deleted."
+            SlackCommunication.postMessege(channel, text)
+        else:
+            text = "Check input again."
+            SlackCommunication.postMessege(channel, text)

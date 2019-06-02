@@ -140,6 +140,16 @@ def taskstatus(taskid):
     except:
         return "Wrong task id"
 
+def rightTask(taskid):
+    check = None
+    records = db.get_collection("task")
+    check = records.find({"taskid": taskid}).distinct("taskid")
+    if check!=None and check!=[]:
+        return True
+    else:
+        return False
+
+
 
 def taskforecast(taskid,startdate,days,channels):
     endepend,startdepend,taskfree=None,None,None

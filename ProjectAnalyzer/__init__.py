@@ -17,13 +17,13 @@ def register_ProjectManager(dict):
     manager=dict.get("user")
     channel=dict.get("channel")
     records=db.get_collection("user")
-    if records.find({"userid":manager,"roleid":"2"}).count()==0:
+    if records.find({"roleid":"2"}).count()==0:
         record=records.find_one_and_update({"userid":manager},{'$set':{"roleid":"2"}})
         text = "User <@" + manager + "> assinged to Manage this project"
         channel = channel
         SlackCommunication.postMessege(channel,text)
     elif records.find({"userid":manager,"roleid":"2"}).count()==1:
-        text = "User <@" + manager + "> already project manager"
+        text = "Only one can be a project manager"
         SlackCommunication.postMessege(channel, text)
 
 
@@ -197,11 +197,9 @@ def register_Project(dict):
                         enddate=array[count+1]
                     if z == "-totalslack":
                         totalslack=array[count+1]
-                    if z == "-totalslack":
-                        totalslack=array[count+1]
             count=count+1
         records = db.get_collection("project")
-        if periodValidation(startdate,enddate,channels):
+        if periodValidation(startdate,enddate,channels) and  projectid!=None and projectname!=None and startdate!=None and enddate!=None and totalslack!=None:
             mydict = {"projectid": projectid, "projectname": projectname, "startdate": startdate, "enddate": enddate,"totalslack": totalslack,"managerid": user}
             id = records.insert_one(mydict)
             if id!=None:
@@ -212,6 +210,10 @@ def register_Project(dict):
                 text = "Process terminated. Check input again"
                 channel = channels
                 SlackCommunication.postMessege(channel, text)
+        else:
+            text = "Check input again"
+            channel = channels
+            SlackCommunication.postMessege(channel, text)
     else:
         text = "Only project manager can perform this project"
         channel = channels
@@ -296,23 +298,28 @@ def update_github(dict):
     manager=dict.get("user")
     channel=dict.get("channel")
     ts=dict.get("ts")
+    githublink=None
     array = msg.split(" ")
     if checkUserRole(manager):
         for z in array:
-            if z[0] != None and z[0] != " ":
-                if z[0] == "-":
-                    if z == "-githublink":
-                        githublink = array[count + 1]
+            try:
+                if z[0] != None and z[0] != " ":
+                    if z[0] == "-":
+                        if z == "-githublink":
+                            githublink = array[count + 1]
+            except:
+                break
             count = count + 1
         SlackCommunication.deleteMessege(channel, ts)
         records = db.get_collection("project")
-        if githublink=="":
+        if githublink=="" or githublink==None:
             text = "User command is incomplete. Please input right command to proceed"
             SlackCommunication.postMessege(channel, text)
         else:
             if checkUserRole(manager) and githublink!=None:
                 githublink=githublink[1:]
                 githublink=githublink[:-1]
+                githublink=githublink.split("|")[0]
                 records.find_one_and_update({"managerid": manager}, {'$set': {"githublink": githublink}})
                 text = "Github linked"
                 SlackCommunication.postMessege(channel, text)
