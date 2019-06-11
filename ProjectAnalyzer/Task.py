@@ -16,8 +16,7 @@ def taskmongoupdate(channels,key,point,updates):
     record = records.find_one_and_update({"taskid": key}, {'$set': {point: updates}})
     if record!=None:
         text = "Data Updated"
-        channel = channels
-        SlackCommunication.postMessege(channel, text)
+        SlackCommunication.postMessege(channels, text)
 
 def checkAlltaskdetails(dicts):
     documents = db.get_collection("task")
@@ -63,9 +62,6 @@ def updatetask(dicts):
                 if z == "-taskname":
                     taskname = array[count + 1]
                     taskmongoupdate(channels, taskid, "taskname", taskname)
-                if z == "-projectid":
-                    projectid = array[count + 1]
-                    taskmongoupdate(channels, taskid, "projectid", projectid)
                 if z == "-freeslack":
                     freeslack = array[count + 1]
                     taskmongoupdate(channels, taskid, "freeslack", freeslack)
@@ -125,11 +121,12 @@ def updatetask(dicts):
         text = "Process terminated. check input again"
         SlackCommunication.postMessege(channels, text)
 
-def statusUpdate(key,channels,update):
-    record = None
+def statusUpdate(key,update):
     records = db.get_collection("task")
-    record = records.find_one_and_update({"taskid": key}, {'$set': {"status": update}})
-    return record
+    if records.find_one_and_update({"taskid": key}, {'$set': {"status": update}}):
+        return True
+    else:
+        return False
 
 
 def taskstatus(taskid):
@@ -141,10 +138,8 @@ def taskstatus(taskid):
         return "Wrong task id"
 
 def rightTask(taskid):
-    check = None
     records = db.get_collection("task")
-    check = records.find({"taskid": taskid}).distinct("taskid")
-    if check!=None and check!=[]:
+    if records.find({"taskid": taskid}).distinct("taskid"):
         return True
     else:
         return False
@@ -458,5 +453,15 @@ def periodCalculator(starttimes, endtimes):
 
         totaldays = yrs * 365 + months * 30 + days
         return totaldays
+
+
+def duplicateChecker(variable,value,table):
+    documents = db.get_collection(table)
+    checkpoint=documents.find({variable:value}).count()
+    if checkpoint==0:
+        return True
+    else:
+        return False
+
 
 

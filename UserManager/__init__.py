@@ -1,5 +1,5 @@
 import re
-from ProjectAnalyzer import checkUserRole,Task
+from ProjectAnalyzer import checkUserRole
 from slackclient import SlackClient
 import pymongo
 from ProjectAnalyzer import SlackCommunication,Project,Task
@@ -32,21 +32,25 @@ def registration(dict):
                 fullname = array[count + 1]
         count = count + 1
     records = db.get_collection("user")
-    if(user!=None and fullname!=None and email!=None and location!= None):
+    if user!=None and fullname!=None and email!=None and location!= None :
         if rightEmail(email):
-            mydict = {"userid":user,"fullname": fullname, "email": email, "location": location}
-            id = records.insert_one(mydict)
-            if id != None:
-                text = "<@" + user + "> registered to system."
-                SlackCommunication.postMessege(channel, text)
+            if Task.duplicateChecker("userid",user,"user"):
+                mydict = {"userid":user,"fullname": fullname, "email": email, "location": location}
+                ischecked = records.insert_one(mydict).acknowledged
+                if ischecked:
+                    text = "<@" + user + "> registered to system."
+                    SlackCommunication.postMessege(channel, text)
+                else:
+                    text = "Registration failed."
+                    SlackCommunication.postMessege(channel, text)
             else:
-                text = "Registration failed"
+                text = "Alreqady registered."
                 SlackCommunication.postMessege(channel, text)
         else:
-            text = "Please check email again"
+            text = "Please check email again."
             SlackCommunication.postMessege(channel, text)
     else:
-        text = "You should set input parameters with values"
+        text = "You should set input parameters with values."
         SlackCommunication.postMessege(channel, text)
 
 def rightEmail(email):
@@ -74,12 +78,11 @@ def workassigner(dict):
     msg = dict.get("text")
     array = msg.split(" ")
     for z in array:
-        if z[0] == "-":
-            if z == "-userid":
-                userid = array[count + 1]
-            if z == "-tasksid":
-                for countnumber in range(count+1,len(array)):
-                    taskids = taskids+" "+str(array[countnumber])
+        if z == "-userid":
+            userid = array[count + 1]
+        if z == "-tasksid":
+            for countnumber in range(count + 1, len(array)):
+                taskids = taskids + " " + str(array[countnumber])
         count = count + 1
 
     if taskids!="":
@@ -91,15 +94,11 @@ def workassigner(dict):
                     isvalidate=False
                     break
         if isvalidate and checkUserRole(user):
-            id = records.find_one_and_update({"userid": userid}, {'$set': {"allocatedtasks": taskids}})
-            print(id)
-        if id != None:
-            text = "<@" + user + "> asssigned to do " + taskids + "."
-            channel = channel
-            SlackCommunication.postMessege(channel, text)
+            if records.find_one_and_update({"userid": userid}, {'$set': {"allocatedtasks": taskids}}):
+                text = "<@" + user + "> asssigned to do " + taskids + "."
+                SlackCommunication.postMessege(channel, text)
         else:
             text = "Assigning failed"
-            channel = channel
             SlackCommunication.postMessege(channel, text)
 
 
@@ -113,15 +112,14 @@ def deleteUser(dict):
     msg = dict.get("text")
     array = msg.split(" ")
     for z in array:
-        if z[0] == "-":
-            if z == "-userid":
-                userid = array[count + 1]
+        if z == "-userid":
+            userid = array[count + 1]
         count = count + 1
     records = db.get_collection("user")
-    if userid != None and checkUserRole(user):
+    if userid != None and userid!="" and checkUserRole(user):
         userdetail = {"userid": userid }
-        check=records.delete_one(userdetail).deleted_count
-        if check>0:
+        check=records.delete_one(userdetail).acknowledged
+        if check:
             text = "<@" + user + "> Deleted."
             SlackCommunication.postMessege(channel, text)
         else:

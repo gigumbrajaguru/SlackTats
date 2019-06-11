@@ -18,12 +18,3 @@ def deleteMessege(channels,ts):
         channel=channels,
         ts=ts
         )
-
-def usercount():
-    count=0
-    request=sc.api_call("users.list")
-    if request['ok']:
-        for item in request['members']:
-            if item["is_bot"]==False and item["is_app_user"]==False:
-                count=count+1
-    return count

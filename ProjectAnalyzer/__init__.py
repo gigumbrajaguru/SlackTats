@@ -20,7 +20,6 @@ def register_ProjectManager(dict):
     if records.find({"roleid":"2"}).count()==0:
         record=records.find_one_and_update({"userid":manager},{'$set':{"roleid":"2"}})
         text = "User <@" + manager + "> assinged to Manage this project"
-        channel = channel
         SlackCommunication.postMessege(channel,text)
     elif records.find({"userid":manager,"roleid":"2"}).count()==1:
         text = "Only one can be a project manager"
@@ -109,13 +108,11 @@ def periodValidation(startdate,enddate,channel):
                 return False
         else:
             text = "Please check input again"
-            channel = channel
             SlackCommunication.postMessege(channel, text)
             return False
 
     else:
         text = "Please check input commands again"
-        channel = channel
         SlackCommunication.postMessege(channel, text)
 def create_Task(dict):
     manager = dict.get("user")
@@ -153,23 +150,19 @@ def create_Task(dict):
                         if array[count + 1]=="important" or array[count + 1]=="normal" or array[count + 1]=="critical":
                             type = array[count + 1]
             count = count + 1
-        if dateValidation(manager,projectid,starttime,endtime) and periodValidation(starttime,endtime,channel):
+        if dateValidation(manager,projectid,starttime,endtime) and periodValidation(starttime,endtime,channel) and Task.duplicateChecker("taskid", taskid,"task"):
             records = db.get_collection("task")
-            print("x")
             mydict = {"taskname": taskname , "taskid": taskid, "projectid": projectid, "taskprogress": "0",
                       "freeslack": freeslack, "starttime": starttime, "endtime": endtime, "type": type, "status": "fine","taskcontent":taskcontent}
-            id = records.insert_one(mydict)
-            if id != None:
+            ischeck = records.insert_one(mydict).acknowledged
+            if ischeck:
                 text = "Task created"
-                channel = channel
                 SlackCommunication.postMessege(channel,text)
         else:
             text = "Process terminated. Check input again"
-            channel = channel
             SlackCommunication.postMessege(channel, text)
     else:
         text = "Only project manager can perform this project"
-        channel = channel
         SlackCommunication.postMessege(channel, text)
 
 def register_Project(dict):
@@ -178,11 +171,7 @@ def register_Project(dict):
     msg = dict.get("text")
     channels = dict.get("channel")
     if checkUserRole(user):
-        projectid=None
-        projectname=None
-        startdate=None
-        enddate=None
-        totalslack=None
+        projectid,projectname,startdate,enddate,totalslack=None,None,None,None,None
         array = msg.split(" ")
         for z in array:
             if z[0] != None and z[0] != " ":
@@ -199,25 +188,21 @@ def register_Project(dict):
                         totalslack=array[count+1]
             count=count+1
         records = db.get_collection("project")
-        if periodValidation(startdate,enddate,channels) and  projectid!=None and projectname!=None and startdate!=None and enddate!=None and totalslack!=None:
+        if periodValidation(startdate,enddate,channels) and  projectid!=None and projectname!=None and startdate!=None and enddate!=None and totalslack!=None and Task.duplicateChecker("projectid",projectid,"project"):
             mydict = {"projectid": projectid, "projectname": projectname, "startdate": startdate, "enddate": enddate,"totalslack": totalslack,"managerid": user}
-            id = records.insert_one(mydict)
-            if id!=None:
+            ischecked = records.insert_one(mydict).acknowledged
+            if ischecked:
                 text = "Project  " + projectname + " is connected"
-                channel = channels
-                SlackCommunication.postMessege(channel, text)
+                SlackCommunication.postMessege(channels, text)
             else:
-                text = "Process terminated. Check input again"
-                channel = channels
-                SlackCommunication.postMessege(channel, text)
+                text = "Process terminated. Try again"
+                SlackCommunication.postMessege(channels, text)
         else:
             text = "Check input again"
-            channel = channels
-            SlackCommunication.postMessege(channel, text)
+            SlackCommunication.postMessege(channels, text)
     else:
         text = "Only project manager can perform this project"
-        channel = channels
-        SlackCommunication.postMessege(channel, text)
+        SlackCommunication.postMessege(channels, text)
 
 
 
@@ -227,9 +212,7 @@ def settaskdepends(dict):
     channels = dict.get("channel")
     user=dict.get("user")
     if checkUserRole(user):
-        main=None
-        startdepends=None
-        enddepends=None
+        main,startdepends,enddepends=None,None,None
         array = msg.split(" ")
         for z in array:
             if z[0] != None and z[0] != " ":
@@ -259,35 +242,29 @@ def settaskdepends(dict):
                 record=records.find_one_and_update({"taskid":main},{'$set':{"startdepends":startdepends,"enddepends":enddepends}})
                 if record:
                     text = str(countdepend)+" tasks depend on "+main+" task"
-                    channel = channels
-                    SlackCommunication.postMessege(channel, text)
+                    SlackCommunication.postMessege(channels, text)
                 else:
                     text = "Process terminated. Check input again"
-                    channel = channels
-                    SlackCommunication.postMessege(channel, text)
+                    SlackCommunication.postMessege(channels, text)
     else:
         text = "Only project manager can perform this project"
-        channel = channels
-        SlackCommunication.postMessege(channel, text)
+        SlackCommunication.postMessege(channels, text)
 
 def checktaskdepend(dependset,channels):
     records = db.get_collection("task")
     if dependset!=None:
         try:
             for item in dependset:
-                check=None
                 check=records.find({"taskid":item},{"taskid":1}).distinct("taskid")[0]
                 if check!=None and check==item:
                     return True
                 else:
                     text = "No task found,check depends again."
-                    channel = channels
-                    SlackCommunication.postMessege(channel, text)
+                    SlackCommunication.postMessege(channels, text)
                     return False
         except:
             text = "No task found,check depends again."
-            channel = channels
-            SlackCommunication.postMessege(channel, text)
+            SlackCommunication.postMessege(channels, text)
             return False
     else:
         return True
@@ -320,9 +297,9 @@ def update_github(dict):
                 githublink=githublink[1:]
                 githublink=githublink[:-1]
                 githublink=githublink.split("|")[0]
-                records.find_one_and_update({"managerid": manager}, {'$set': {"githublink": githublink}})
-                text = "Github linked"
-                SlackCommunication.postMessege(channel, text)
+                if records.find_one_and_update({"managerid": manager}, {'$set': {"githublink": githublink}}):
+                    text = "Github linked"
+                    SlackCommunication.postMessege(channel, text)
     else:
         text="Only manager can performe this command and need to configure at the beginning of project"
         SlackCommunication.postMessege(channel, text)
@@ -342,22 +319,21 @@ def taskContent(dict):
             for x in range(5,len(array)):
                 arraycontent.append(array[x])
                 objectives=" ".join(arraycontent)
-            record = records.find_one_and_update({"taskid": array[2],"projectid":array[4]}, {
-                '$set': {"taskcontent": objectives}})
-            text="Data updated"
-            SlackCommunication.postMessege(channel,text)
+            if records.find_one_and_update({"taskid": array[2], "projectid": array[4]}, {
+                '$set': {"taskcontent": objectives}}):
+                text="Data updated"
+                SlackCommunication.postMessege(channel,text)
 
 def checkTaskStatus(taskid):
     return Task.taskstatus(taskid)
 
 def taskHold(dict):
-    taskid,days=None,0
-    startdate,count=None,0
+    taskid,days,startdate,count=None,0,None,0
     msg = dict.get("text")
     manager = dict.get("user")
     channel = dict.get("channel")
     array = msg.split(" ")
-    if checkUserRole(manager) and SlackCommunication.usercount() >1:
+    if checkUserRole(manager):
         for z in array:
             if z[0] != None and z[0] != " ":
                 if z[0] == "-":

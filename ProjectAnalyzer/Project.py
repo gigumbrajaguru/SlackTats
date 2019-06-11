@@ -1,6 +1,5 @@
 import datetime
 import re
-import shutil
 from slackclient import SlackClient
 import pymongo
 import os
@@ -21,7 +20,6 @@ slack_token = "xoxb-402757429986-412087740598-8bGVF1HoEKEdfQws9aNDTeUM"
 sc = SlackClient(slack_token)
 completioncases={"completed":"completed","finished":"finished","fixed":"fixed","percentage":"percentage","removed":"removed"}
 repo=None
-globalprojectid=None
 
 def checkUserRole(manger):
     collection=db.get_collection("user")
@@ -66,9 +64,6 @@ def updateproject(dicts):
                 if z == "-projectname":
                     projectname = array[count + 1]
                     projectmongoupdate(channels, projectid, "projectname", projectname,dicts)
-                if z == "-projectid":
-                    projectid = array[count + 1]
-                    projectmongoupdate(channels, projectid, "projectid", projectid,dicts)
                 if z == "-totalslack":
                     totalslack = array[count + 1]
                     projectmongoupdate(channels, projectid, "totalslack", totalslack,dicts)
@@ -96,6 +91,7 @@ def updateproject(dicts):
 
 def connectGithub(channels,managerid):
         documents = db.get_collection("project")
+
         paths="../Projects/rep"
         if checkUserRole(managerid):
             try:
@@ -105,7 +101,6 @@ def connectGithub(channels,managerid):
                         if os.path.exists(paths):
                             repo = Repo(paths)
                             repo.remotes.origin.pull()
-                            print("repository updated")
                         else:
                             Repo.clone_from(gitlink, paths)
                         repo = Repo(paths)
@@ -117,8 +112,11 @@ def connectGithub(channels,managerid):
                         else:
                             text = 'Repo description: Server problem'
                             SlackCommunication.postMessege(channels, text)
+                else:
+                    text = 'Link Github repository.'
+                    SlackCommunication.postMessege(channels, text)
             except:
-                text = 'Link github first'
+                text = 'Complete project registeration first'
                 SlackCommunication.postMessege(channels, text)
 
 
@@ -134,7 +132,6 @@ def printrepo(dicts):
                 if os.path.exists(paths):
                     repo = Repo(paths)
                     repo.remotes.origin.pull()
-                    print("repository updated")
                 else:
                     Repo.clone_from(gitlink, paths)
                 repo = Repo(paths)
@@ -171,15 +168,13 @@ def checkcommit(channels,commit,repo):
         for word in commitarray:
             if word == "projectid":
                 projectid = commitarray[count + 1]
-                if projectid!=None:
-                    globalprojectid=projectid
             if word == "taskid":
                 taskid = commitarray[count + 1]
             if word == "taskname":
                 taskname = commitarray[count + 1]
             count = count + 1
-        if globalprojectid != [] and globalprojectid != None:
-            checkedcommits = projectdocuments.find({"projectid": globalprojectid}).distinct("checkedcommits")
+        if projectid != [] and projectid != None:
+            checkedcommits = projectdocuments.find({"projectid": projectid}).distinct("checkedcommits")
             for checkedcommit in checkedcommits:
                 if str(commit.hexsha) == checkedcommit:
                     check = 1
@@ -189,65 +184,62 @@ def checkcommit(channels,commit,repo):
             taskcontentarray = documents.find({"taskname": taskname, "taskid": taskid, "projectid": projectid}).distinct("taskcontent")
             if taskcontentarray!=[] and taskcontentarray!=None:
                 taskcontentarray=taskcontentarray[0].split(" #")
-            checkedcommits = projectdocuments.find({"projectid": projectid}).distinct("checkedcommits")
 
-        elif globalprojectid!=None:
+        else:
             text = "Skip one commit message : Not according to structure"
             SlackCommunication.postMessege(channels, text)
 
+        if check == 0:
+            commitscontent = None
+            completedsubtasks, counts = 0, 0
+            count, istest = 0, 0
+            if taskcontentarray != [] and taskcontentarray != None:
+                for y in range(7, len(commitarray)):
+                    if commitarray[y] != None and commitarray[y] != " " and commitarray[y] != "":
+                        commitcontent = commitcontent + " " + commitarray[y]
+                numberarray = re.findall(r'\b\d+\b', commitcontent)
+                for num in range(0, len(numberarray) - 1):
+                    splt = str(numberarray[count]) + "."
+                    spltl = str(numberarray[count + 1]) + "."
+                    contentfilter = commitcontent.split(splt)
+                    commitscontent = contentfilter[1].split(spltl)
+                    count = count + 1
+                if commitscontent != None:
+                    for rep in taskcontentarray:
+                        if rep != '':
+                            counts = counts + 1
+                            for turns in commitscontent:
+                                if turns != '':
+                                    ratio = fuzz.ratio(str(turns), str(rep))
+                                    print(ratio)
+                                    if ratio == 100:
+                                        completedsubtasks = completedsubtasks + 1
+                                    elif TextBlob(turns).words.count('Completed') > 0 and ratio > 59:
+                                        completedsubtasks = completedsubtasks + 1
+                                    elif TextBlob(turns).words.count('Finished') > 0 and ratio > 59:
+                                        completedsubtasks = completedsubtasks + 1
+                                    if TextBlob(turns).words.count('tested') > 1 or TextBlob(
+                                            turns).words.count('verified') > 1:
+                                        istest = 10
+                if completedsubtasks > 0 and counts > 0:
+                    commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
+                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
+                    if (commitcompletion == 100):
+                        documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "finished"}})
+                    if (commitcompletion > 90):
+                        documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "fine"}})
+                    elif (commitcompletion > 50 and commitcompletion < 90):
+                        documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "working"}})
+                    elif (commitcompletion < 50):
+                        documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "critical"}})
+                text = "Checked commit message and update project progress."
+                SlackCommunication.postMessege(channels, text)
+        if check == 0:
+            projectdocuments.update({"projectid": projectid},
+                                    {'$push': {"checkedcommits": str(commit.hexsha)}})
 
-        if checkedcommits != [] and checkedcommits != None:
-            for checkedcommit in checkedcommits:
-                if str(commit.hexsha) == checkedcommit:
-                    commitstatus = 1
-                    break
-        else:
-            if commitstatus == 0:
-                commitscontent=None
-                completedsubtasks,counts=0,0
-                count,istest=0,0
-                if taskcontentarray != [] and taskcontentarray != None:
-                    for y in range(7, len(commitarray)):
-                        if commitarray[y] != None and commitarray[y] != " " and commitarray[y] != "":
-                            commitcontent = commitcontent+" "+commitarray[y]
-                    numberarray=re.findall(r'\b\d+\b',commitcontent)
-                    for num in range(0,len(numberarray)-1):
-                        splt=str(numberarray[count])+"."
-                        spltl=str(numberarray[count+1]) + "."
-                        contentfilter=commitcontent.split(splt)
-                        commitscontent=contentfilter[1].split(spltl)
-                        count = count + 1
-                    if commitscontent!=None:
-                        for rep in taskcontentarray:
-                            if rep != '':
-                                counts = counts + 1
-                                for turns in commitscontent:
-                                    if turns!='':
-                                        ratio = fuzz.ratio(str(turns),str(rep))
-                                        print(ratio)
-                                        if ratio ==100:
-                                            completedsubtasks = completedsubtasks + 1
-                                        elif TextBlob(turns).words.count('Completed') > 0 and ratio>59 :
-                                            completedsubtasks = completedsubtasks + 1
-                                        elif TextBlob(turns).words.count('Finished') > 0 and ratio > 59:
-                                            completedsubtasks = completedsubtasks + 1
-                                        if TextBlob(turns).words.count('tested')> 1 or TextBlob(
-                                                turns).words.count('verified') > 1:
-                                            istest = 10
-                    if completedsubtasks>0 and counts>0:
-                        commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
-                        documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
-                        if (commitcompletion ==100 ):
-                            documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "finished"}})
-                        if(commitcompletion>90):
-                            documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "fine"}})
-                        elif(commitcompletion>50 and commitcompletion<90):
-                            documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "working"}})
-                        elif (commitcompletion < 50 ):
-                             documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "critical"}})
-            if check == 0:
-                projectdocuments.update({"projectid": projectid},
-                                        {'$push': {"checkedcommits": str(commit.hexsha)}})
+
+
 
 
 
