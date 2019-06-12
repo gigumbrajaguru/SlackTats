@@ -121,38 +121,6 @@ def connectGithub(channels,managerid):
                 SlackCommunication.postMessege(channels, text)
 
 
-def printrepo(dicts):
-    managerid=dicts.get("user")
-    channels = dicts.get("channel")
-    documents = db.get_collection("project")
-    paths = "../Projects/rep"
-    try:
-        gitlink = documents.find({"managerid": managerid}).distinct("githublink")[0]
-        if gitlink != None:
-            if gitlink.split("//")[0] == "https:":
-                if os.path.exists(paths):
-                    repo = Repo(paths)
-                    repo.remotes.origin.pull()
-                else:
-                    Repo.clone_from(gitlink, paths)
-                repo = Repo(paths)
-
-                if not repo.bare:
-                    text = 'Repo description: {}'.format(repo.description)
-                    SlackCommunication.postMessege(channels, text)
-                    text = 'Repo active branch is {}'.format(repo.active_branch)
-                    SlackCommunication.postMessege(channels, text)
-                    for remote in repo.remotes:
-                        text = 'Remote named "{}" with URL "{}"'.format(remote, remote.url)
-                        SlackCommunication.postMessege(channels, text)
-                    text = 'Last commit for repo is {}.'.format(str(repo.head.commit.hexsha))
-                    SlackCommunication.postMessege(channels, text)
-    except:
-        text = 'Connection problem'
-        SlackCommunication.postMessege(channels, text)
-
-
-
 def checkcommit(channels,commit,repo):
     count,istest=0,0
     commitstatus=0

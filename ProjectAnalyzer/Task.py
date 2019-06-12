@@ -50,38 +50,37 @@ def checkAlltaskdetails(dicts):
         text = "Only manager can perform this command"
         SlackCommunication.postMessege(channels, text)
 def updatetask(dicts):
-    count=0
+    count,depends,taskid=0,"",""
     documents = db.get_collection("task")
     channels = dicts.get("channel")
     msg = dicts.get("text")
     array = msg.split(" ")
-    try:
-        for split in array:
-            if split!=None:
-                if split[0] == "-":
-                    if split == "-taskid":
-                        taskid = array[count + 1]
-                    if split == "-taskname":
-                        taskname = array[count + 1]
-                        taskmongoupdate(channels, taskid, "taskname", taskname)
-                    if split == "-freeslack":
-                        freeslack = array[count + 1]
-                        taskmongoupdate(channels, taskid, "freeslack", freeslack)
-                    if split == "-startdate":
-                        starttime = array[count + 1]
-                        taskmongoupdate(channels, taskid, "starttime", starttime)
-                    if split == "-enddate":
-                        endtime = array[count + 1]
-                        taskmongoupdate(channels, taskid, "endtime", endtime)
-                    if split == "-taskcontent":
-                        taskcontent = array[count + 1]
-                        taskmongoupdate(channels, taskid, "taskcontent", taskcontent)
-                    if split == "-type":
-                        if array[count + 1] == "important" or array[count + 1] == "normal" or array[
-                            count + 1] == "critical" :
-                            type = array[count + 1]
-                            taskmongoupdate(channels, taskid, "type", type)
-                    if split == "-removedepend":
+    for split in array:
+        if split != None:
+            if split[0] == "-":
+                if split == "-taskid":
+                    taskid = array[count + 1]
+                if split == "-taskname":
+                    taskname = array[count + 1]
+                    taskmongoupdate(channels, taskid, "taskname", taskname)
+                if split == "-freeslack":
+                    freeslack = array[count + 1]
+                    taskmongoupdate(channels, taskid, "freeslack", freeslack)
+                if split == "-startdate":
+                    starttime = array[count + 1]
+                    taskmongoupdate(channels, taskid, "starttime", starttime)
+                if split == "-enddate":
+                    endtime = array[count + 1]
+                    taskmongoupdate(channels, taskid, "endtime", endtime)
+                if split == "-taskcontent":
+                    taskcontent = array[count + 1]
+                    taskmongoupdate(channels, taskid, "taskcontent", taskcontent)
+                if split == "-type":
+                    if array[count + 1] == "important" or array[count + 1] == "normal" or array[count + 1] == "critical":
+                        type = array[count + 1]
+                        taskmongoupdate(channels, taskid, "type", type)
+                if split == "-removedepend":
+                    if taskid!=None and taskid!="":
                         removedepnd = array[count + 2]
                         dependtype = array[count + 1]
                         if dependtype == "-startdepend":
@@ -95,9 +94,10 @@ def updatetask(dicts):
                         for removes in removearray:
                             for check in arraydepends:
                                 arraydepends.remove(removes)
-                        arraylist=",".join(arraydepends)
+                        arraylist = ",".join(arraydepends)
                         taskmongoupdate(channels, taskid, type, arraylist)
-                    if split == "-addepend":
+                if split == "-addepend":
+                    if taskid != None and taskid != "":
                         dependslist = ""
                         adddepends = array[count + 2]
                         dependtype = array[count + 1]
@@ -109,19 +109,15 @@ def updatetask(dicts):
                             type = "enddepends"
                         if dependslist == None:
                             dependslist = ""
-                            arraydepends=adddepends
+                            arraydepends = adddepends
                         elif adddepends == None:
                             adddepends = ""
-                            arraydepends=dependslist
+                            arraydepends = dependslist
                         else:
                             arraydepends = dependslist + "," + adddepends
                         taskmongoupdate(channels, taskid, type, arraydepends)
-            count = count + 1
-        text = "System updated!"
-        SlackCommunication.postMessege(channels, text)
-    except:
-        text = "Process terminated. check input again"
-        SlackCommunication.postMessege(channels, text)
+        count = count + 1
+
 
 def statusUpdate(key,update):
     records = db.get_collection("task")

@@ -48,8 +48,6 @@ if sc.rtm_connect():
                         ProjectAnalyzer.taskHold(dict)
                     if array[0] == "-taskcontent":
                         ProjectAnalyzer.taskContent(dict)
-                    if array[0] == "-viewrepo":
-                        ProjectAnalyzer.Project.printrepo(dict)
                     if array[0] == "-workassigner":
                         UserManager.workassigner(dict)
                     if array[0] == "-deleteuser":

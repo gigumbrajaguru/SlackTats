@@ -11,20 +11,23 @@
 
 -setdepends -maintask ab1002.01.001 -startdepends ab1002.01.002 -endepends ab1002.01.003
 
--taskcontent -taskid ab1002.01.001 -projectid ab1002 #task read. #calculating progress.
-
--forecast -taskid ab1002.01.001 -startdate 2019/1/3 -days 7
-
--checktasks -projectid ab1002
-
--viewrepo
-
+-updatetask -taskid ab1002.01.002 -removedepend -enddepend ab1002.01.003
 
 -updatetask -taskname go -taskid ab1002.01.001 -projectid ab1002 -freeslack 2 -startdate 2019/1/1 -enddate 2019/2/2 -type important
 
 -updateproject -projectid ab1002 -projectname testproject -startdate 2019/1/1 -enddate 2019/1/16 -totalslack 6 -managerid UBUF3BX36 -githublink https://github.com/gigumbrajaguru/Simple_B.git
 
+-taskcontent -taskid ab1002.01.001 -projectid ab1002 #task read. #calculating progress.
+
+
+
+-forecast -taskid ab1002.01.001 -startdate 2019/1/3 -days 7
+
+-checktasks -projectid ab1002
+
 -deleteuser -userid
+
+
 
 
 

@@ -227,37 +227,43 @@ def settaskdepends(dict):
         records = db.get_collection("task")
         startdep = records.find({"taskid": main}, {"taskid": 1}).distinct("startdepends")
         enddep = records.find({"taskid": main}, {"taskid": 1}).distinct("enddepends")
-        if startdep!=None and startdep!=[] and startdep!=[None] and startdepends!=None:
-            startdepends=startdepends+","+str(startdep[0])
-        elif startdep!=None and startdep!=[] and startdep!=[None] and startdepends==None:
-            startdepends =  str(startdep[0])
 
-        if enddep!= None and enddep != [] and enddep!=[None] and enddepends!=None:
-            enddepends = enddepends + "," + str(enddep[0])
-        elif enddep != None and enddep != [] and enddep != [None] and enddepends == None:
-            enddepends = str(enddep[0])
+        if listCheck(startdepends,startdep) and listCheck(enddepends,enddep):
 
-        startlen,endlen=0,0
-        if main!=None:
-            if startdepends!=None and startdepends!=[]:
-                startdependset = startdepends.split(",")
-                startlen=len(startdependset)
-            else:
-                startdependset=None
-            if enddepends != None and enddepends!=[]:
-                enddependset = enddepends.split(",")
-                endlen=len(enddependset)
-            else:
-                enddependset=None
-            if checktaskdepend(startdependset,channels) and  checktaskdepend(enddependset,channels):
-                countdepend = startlen+endlen
-                record=records.find_one_and_update({"taskid":main},{'$set':{"startdepends":startdepends,"enddepends":enddepends}})
-                if record:
-                    text = str(countdepend)+" tasks depend on "+main+" task"
-                    SlackCommunication.postMessege(channels, text)
+            if startdep!=None and startdep!=[] and startdep!=[None] and startdepends!=None:
+                startdepends=startdepends+","+str(startdep[0])
+            elif startdep!=None and startdep!=[] and startdep!=[None] and startdepends==None:
+                startdepends =  str(startdep[0])
+
+            if enddep!= None and enddep != [] and enddep!=[None] and enddepends!=None:
+                enddepends = enddepends + "," + str(enddep[0])
+            elif enddep != None and enddep != [] and enddep != [None] and enddepends == None:
+                enddepends = str(enddep[0])
+
+            startlen,endlen=0,0
+            if main!=None:
+                if startdepends!=None and startdepends!=[]:
+                    startdependset = startdepends.split(",")
+                    startlen=len(startdependset)
                 else:
-                    text = "Process terminated. Check input again"
-                    SlackCommunication.postMessege(channels, text)
+                    startdependset=None
+                if enddepends != None and enddepends!=[]:
+                    enddependset = enddepends.split(",")
+                    endlen=len(enddependset)
+                else:
+                    enddependset=None
+                if checktaskdepend(startdependset,channels) and  checktaskdepend(enddependset,channels):
+                    countdepend = startlen+endlen
+                    record=records.find_one_and_update({"taskid":main},{'$set':{"startdepends":startdepends,"enddepends":enddepends}})
+                    if record:
+                        text = str(countdepend)+" tasks depend on "+main+" task"
+                        SlackCommunication.postMessege(channels, text)
+                    else:
+                        text = "Process terminated. Check input again"
+                        SlackCommunication.postMessege(channels, text)
+        else:
+            text = "Some depends already submitted"
+            SlackCommunication.postMessege(channels, text)
     else:
         text = "Only project manager can perform this project"
         SlackCommunication.postMessege(channels, text)
@@ -357,3 +363,15 @@ def taskHold(dict):
                         days = int(array[count + 1])
             count = count + 1
         Task.taskforecast(taskid,startdate,days,channel)
+
+def listCheck(idlist,submittedidlist):
+    if idlist!=None and idlist!=[] and submittedidlist!=None and submittedidlist!=[]:
+        currentlist=idlist.split(",")
+        summmited=submittedidlist[0].split(",")
+        for checkid in currentlist:
+            for checkidlist in summmited:
+                if checkid==checkidlist:
+                    return False
+        return True
+    else:
+        return True
