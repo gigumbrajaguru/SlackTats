@@ -26,19 +26,20 @@ def checkAlltaskdetails(dicts):
     if Project.checkUserRole(manager):
         count=0
         array = msg.split(" ")
-        for z in array:
-            if z[0] == "-":
-                if z == "-projectid":
-                    projectid = array[count + 1]
-                    taskname=documents.find({"projectid": projectid}).distinct("taskname")
-                    taskid = documents.find({"projectid": projectid}).distinct("taskid")
-                    strtdate = documents.find({"projectid": projectid}).distinct("starttime")
-                    enddate = documents.find({"projectid": projectid}).distinct("endtime")
-                    totalslack = documents.find({"projectid": projectid}).distinct("freeslack")
-                    type=documents.find({"projectid": projectid}).distinct("type")
-                    status=documents.find({"projectid": projectid}).distinct("status")
-                    enddepends=documents.find({"projectid": projectid}).distinct("enddepends")
-                    strtsdepends = documents.find({"projectid": projectid}).distinct("startdepends")
+        for split in array:
+            if split!=None:
+                if split[0] == "-":
+                    if split == "-projectid":
+                        projectid = array[count + 1]
+                        taskname=documents.find({"projectid": projectid}).distinct("taskname")
+                        taskid = documents.find({"projectid": projectid}).distinct("taskid")
+                        strtdate = documents.find({"projectid": projectid}).distinct("starttime")
+                        enddate = documents.find({"projectid": projectid}).distinct("endtime")
+                        totalslack = documents.find({"projectid": projectid}).distinct("freeslack")
+                        type=documents.find({"projectid": projectid}).distinct("type")
+                        status=documents.find({"projectid": projectid}).distinct("status")
+                        enddepends=documents.find({"projectid": projectid}).distinct("enddepends")
+                        strtsdepends = documents.find({"projectid": projectid}).distinct("startdepends")
             count=count+1
         for x in range(len(taskid)):
             text=">Task name : "+taskname[x]+" Task ID : "+taskid[x]+" Start date : "+strtdate[x]+\
@@ -55,65 +56,66 @@ def updatetask(dicts):
     msg = dicts.get("text")
     array = msg.split(" ")
     try:
-        for z in array:
-            if z[0] == "-":
-                if z == "-taskid":
-                    taskid = array[count + 1]
-                if z == "-taskname":
-                    taskname = array[count + 1]
-                    taskmongoupdate(channels, taskid, "taskname", taskname)
-                if z == "-freeslack":
-                    freeslack = array[count + 1]
-                    taskmongoupdate(channels, taskid, "freeslack", freeslack)
-                if z == "-startdate":
-                    starttime = array[count + 1]
-                    taskmongoupdate(channels, taskid, "starttime", starttime)
-                if z == "-enddate":
-                    endtime = array[count + 1]
-                    taskmongoupdate(channels, taskid, "endtime", endtime)
-                if z == "-taskcontent":
-                    taskcontent = array[count + 1]
-                    taskmongoupdate(channels, taskid, "taskcontent", taskcontent)
-                if z == "-type":
-                    if array[count + 1] == "important" or array[count + 1] == "normal" or array[
-                        count + 1] == "critical" :
-                        type = array[count + 1]
-                        taskmongoupdate(channels, taskid, "type", type)
-                if z == "-removedepend":
-                    removedepnd = array[count + 2]
-                    dependtype = array[count + 1]
-                    if dependtype == "-startdepend":
-                        depends = documents.find({"taskid": taskid}).distinct("startdepends")[0]
-                        type = "startdepends"
-                    elif dependtype == "-enddepend":
-                        depends = documents.find({"taskid": taskid}).distinct("enddepends")[0]
-                        type = "enddepends"
-                    removearray = removedepnd.split(",")
-                    arraydepends = depends.split(",")
-                    for removes in removearray:
-                        for check in arraydepends:
-                            arraydepends.remove(removes)
-                    arraylist=",".join(arraydepends)
-                    taskmongoupdate(channels, taskid, type, arraylist)
-                if z == "-addepend":
-                    dependslist = ""
-                    adddepends = array[count + 2]
-                    dependtype = array[count + 1]
-                    if dependtype == "-startdepend":
-                        dependslist = documents.find({"taskid": taskid}).distinct("startdepends")[0]
-                        type = "startdepends"
-                    elif dependtype == "-enddepend":
-                        dependslist = documents.find({"taskid": taskid}).distinct("enddepends")[0]
-                        type = "enddepends"
-                    if dependslist == None:
+        for split in array:
+            if split!=None:
+                if split[0] == "-":
+                    if split == "-taskid":
+                        taskid = array[count + 1]
+                    if split == "-taskname":
+                        taskname = array[count + 1]
+                        taskmongoupdate(channels, taskid, "taskname", taskname)
+                    if split == "-freeslack":
+                        freeslack = array[count + 1]
+                        taskmongoupdate(channels, taskid, "freeslack", freeslack)
+                    if split == "-startdate":
+                        starttime = array[count + 1]
+                        taskmongoupdate(channels, taskid, "starttime", starttime)
+                    if split == "-enddate":
+                        endtime = array[count + 1]
+                        taskmongoupdate(channels, taskid, "endtime", endtime)
+                    if split == "-taskcontent":
+                        taskcontent = array[count + 1]
+                        taskmongoupdate(channels, taskid, "taskcontent", taskcontent)
+                    if split == "-type":
+                        if array[count + 1] == "important" or array[count + 1] == "normal" or array[
+                            count + 1] == "critical" :
+                            type = array[count + 1]
+                            taskmongoupdate(channels, taskid, "type", type)
+                    if split == "-removedepend":
+                        removedepnd = array[count + 2]
+                        dependtype = array[count + 1]
+                        if dependtype == "-startdepend":
+                            depends = documents.find({"taskid": taskid}).distinct("startdepends")[0]
+                            type = "startdepends"
+                        elif dependtype == "-enddepend":
+                            depends = documents.find({"taskid": taskid}).distinct("enddepends")[0]
+                            type = "enddepends"
+                        removearray = removedepnd.split(",")
+                        arraydepends = depends.split(",")
+                        for removes in removearray:
+                            for check in arraydepends:
+                                arraydepends.remove(removes)
+                        arraylist=",".join(arraydepends)
+                        taskmongoupdate(channels, taskid, type, arraylist)
+                    if split == "-addepend":
                         dependslist = ""
-                        arraydepends=adddepends
-                    elif adddepends == None:
-                        adddepends = ""
-                        arraydepends=dependslist
-                    else:
-                        arraydepends = dependslist + "," + adddepends
-                    taskmongoupdate(channels, taskid, type, arraydepends)
+                        adddepends = array[count + 2]
+                        dependtype = array[count + 1]
+                        if dependtype == "-startdepend":
+                            dependslist = documents.find({"taskid": taskid}).distinct("startdepends")[0]
+                            type = "startdepends"
+                        elif dependtype == "-enddepend":
+                            dependslist = documents.find({"taskid": taskid}).distinct("enddepends")[0]
+                            type = "enddepends"
+                        if dependslist == None:
+                            dependslist = ""
+                            arraydepends=adddepends
+                        elif adddepends == None:
+                            adddepends = ""
+                            arraydepends=dependslist
+                        else:
+                            arraydepends = dependslist + "," + adddepends
+                        taskmongoupdate(channels, taskid, type, arraydepends)
             count = count + 1
         text = "System updated!"
         SlackCommunication.postMessege(channels, text)
@@ -151,19 +153,9 @@ def taskforecast(taskid,startdate,days,channels):
     holdendyr, holdendmonth, holdenddate,remaindays=0,0,0,0
     try:
         documents = db.get_collection("task")
-        taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
         taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
         starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
         endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
-        type= documents.find({"taskid": taskid}).distinct("type")[0]
-        status = documents.find({"taskid": taskid}).distinct("status")[0]
-        endepends=documents.find({"taskid": taskid}).distinct("enddepends")[0]
-        startdepends = documents.find({"taskid": taskid}).distinct("startdepends")[0]
-        if endepends!=None:
-            endepend=endepends[0]
-        if startdepends!=None:
-            startdepend=startdepends[0]
-
         if (days>taskfree):
             remaindays=days-taskfree
 
@@ -318,7 +310,6 @@ def startdependtask(channels, taskid, days, remaindays):
     arrays = []
     count = 0
     endepends, startdepends = None, None
-    print(taskid,remaindays)
     dependslist = documents.find({"taskid": taskid}).distinct("startdepends")
     if dependslist!=None and dependslist!=[]:
         dependslist=dependslist[0]

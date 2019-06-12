@@ -9,7 +9,7 @@
 
 -registergithub -githublink https://github.com/gigumbrajaguru/Test.git
 
--setdepends -maintask ab1002.01.001 -startdepends ab1002.03.001 -endepends ab1002.02.001
+-setdepends -maintask ab1002.01.001 -startdepends ab1002.01.002 -endepends ab1002.01.003
 
 -taskcontent -taskid ab1002.01.001 -projectid ab1002 #task read. #calculating progress.
 

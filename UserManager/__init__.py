@@ -15,21 +15,22 @@ def registration(dict):
     location, email, fullname = None, None, None
     msg = dict.get("text")
     array = msg.split(" ")
-    for z in array:
-        if z[0] == "-":
-            if z == "-location":
-                location = array[count + 1]
-            if z == "-email":
-                email = array[count + 1]
-                try:
-                    email = email.split("|")[1]
-                    email = email[:-1]
-                except:
-                    email=""
-                    text = "Please check email domain"
-                    SlackCommunication.postMessege(channel, text)
-            if z == "-fullname":
-                fullname = array[count + 1]
+    for split in array:
+        if split!=None:
+            if split[0] == "-":
+                if split == "-location":
+                    location = array[count + 1]
+                if split == "-email":
+                    email = array[count + 1]
+                    try:
+                        email = email.split("|")[1]
+                        email = email[:-1]
+                    except:
+                        email=""
+                        text = "Please check email domain"
+                        SlackCommunication.postMessege(channel, text)
+                if split == "-fullname":
+                    fullname = array[count + 1]
         count = count + 1
     records = db.get_collection("user")
     if user!=None and fullname!=None and email!=None and location!= None :
@@ -58,7 +59,7 @@ def rightEmail(email):
     if (len(checkemaillevelone)==2):
         checkemailleveltwo=checkemaillevelone[1].split(".")
         if(len(checkemailleveltwo)==2):
-            if (bool(re.search('[a-zA-Z]',checkemaillevelone[0])) and bool(re.search('[a-zA-Z]',checkemailleveltwo[0]))  and bool(re.search('[a-zA-Z]',checkemailleveltwo[1]))):
+            if (bool(re.search('[a-zA-split]',checkemaillevelone[0])) and bool(re.search('[a-zA-split]',checkemailleveltwo[0]))  and bool(re.search('[a-zA-split]',checkemailleveltwo[1]))):
                 return True
             else:
                 return False
@@ -77,12 +78,13 @@ def workassigner(dict):
     channel = dict.get("channel")
     msg = dict.get("text")
     array = msg.split(" ")
-    for z in array:
-        if z == "-userid":
-            userid = array[count + 1]
-        if z == "-tasksid":
-            for countnumber in range(count + 1, len(array)):
-                taskids = taskids + " " + str(array[countnumber])
+    for split in array:
+        if split!=None:
+            if split == "-userid":
+                userid = array[count + 1]
+            if split == "-tasksid":
+                for countnumber in range(count + 1, len(array)):
+                    taskids = taskids + " " + str(array[countnumber])
         count = count + 1
 
     if taskids!="":
@@ -111,8 +113,8 @@ def deleteUser(dict):
     channel = dict.get("channel")
     msg = dict.get("text")
     array = msg.split(" ")
-    for z in array:
-        if z == "-userid":
+    for split in array:
+        if split == "-userid":
             userid = array[count + 1]
         count = count + 1
     records = db.get_collection("user")

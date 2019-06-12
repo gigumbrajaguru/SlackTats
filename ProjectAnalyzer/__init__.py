@@ -129,24 +129,24 @@ def create_Task(dict):
         msg = dict.get("text")
         array = msg.split(" ")
 
-        for z in array:
-            if z[0]!=None and z[0]!=" ":
-                if z[0] == "-":
-                    if z == "-taskname":
+        for split in array:
+            if split[0]!=None and split[0]!=" ":
+                if split[0] == "-":
+                    if split == "-taskname":
                         taskname = array[count+1 ]
-                    if z == "-taskid":
+                    if split == "-taskid":
                         taskid = array[count + 1]
-                    if z == "-projectid":
+                    if split == "-projectid":
                         projectid = array[count + 1]
-                    if z == "-freeslack":
+                    if split == "-freeslack":
                         freeslack = array[count + 1]
-                    if z == "-startdate":
+                    if split == "-startdate":
                         starttime = array[count + 1]
-                    if z == "-enddate":
+                    if split == "-enddate":
                         endtime = array[count + 1]
-                    if z == "-taskcontent":
+                    if split == "-taskcontent":
                         taskcontent = array[count + 1]
-                    if z == "-type":
+                    if split == "-type":
                         if array[count + 1]=="important" or array[count + 1]=="normal" or array[count + 1]=="critical":
                             type = array[count + 1]
             count = count + 1
@@ -173,18 +173,18 @@ def register_Project(dict):
     if checkUserRole(user):
         projectid,projectname,startdate,enddate,totalslack=None,None,None,None,None
         array = msg.split(" ")
-        for z in array:
-            if z[0] != None and z[0] != " ":
-                if z[0] == "-":
-                    if z=="-projectid":
+        for split in array:
+            if split[0] != None and split[0] != " ":
+                if split[0] == "-":
+                    if split=="-projectid":
                         projectid=array[count+1]
-                    if z=="-projectname":
+                    if split=="-projectname":
                         projectname=array[count+1]
-                    if z == "-startdate":
+                    if split == "-startdate":
                         startdate=array[count+1]
-                    if z == "-enddate":
+                    if split == "-enddate":
                         enddate=array[count+1]
-                    if z == "-totalslack":
+                    if split == "-totalslack":
                         totalslack=array[count+1]
             count=count+1
         records = db.get_collection("project")
@@ -214,30 +214,42 @@ def settaskdepends(dict):
     if checkUserRole(user):
         main,startdepends,enddepends=None,None,None
         array = msg.split(" ")
-        for z in array:
-            if z[0] != None and z[0] != " ":
-                if z[0] == "-":
-                    if z == "-maintask":
+        for split in array:
+            if split != None and split != "":
+                if split[0] == "-":
+                    if split == "-maintask":
                         main = array[count + 1]
-                    if z == "-startdepends":
+                    if split == "-startdepends":
                         startdepends = array[count + 1]
-                    if z == "-endepends":
+                    if split == "-endepends":
                         enddepends = array[count + 1]
             count = count + 1
         records = db.get_collection("task")
+        startdep = records.find({"taskid": main}, {"taskid": 1}).distinct("startdepends")
+        enddep = records.find({"taskid": main}, {"taskid": 1}).distinct("enddepends")
+        if startdep!=None and startdep!=[] and startdep!=[None] and startdepends!=None:
+            startdepends=startdepends+","+str(startdep[0])
+        elif startdep!=None and startdep!=[] and startdep!=[None] and startdepends==None:
+            startdepends =  str(startdep[0])
+
+        if enddep!= None and enddep != [] and enddep!=[None] and enddepends!=None:
+            enddepends = enddepends + "," + str(enddep[0])
+        elif enddep != None and enddep != [] and enddep != [None] and enddepends == None:
+            enddepends = str(enddep[0])
+
         startlen,endlen=0,0
         if main!=None:
-            if startdepends!=None :
+            if startdepends!=None and startdepends!=[]:
                 startdependset = startdepends.split(",")
                 startlen=len(startdependset)
             else:
                 startdependset=None
-            if enddepends != None:
+            if enddepends != None and enddepends!=[]:
                 enddependset = enddepends.split(",")
                 endlen=len(enddependset)
             else:
                 enddependset=None
-            if checktaskdepend(startdependset,channels) :
+            if checktaskdepend(startdependset,channels) and  checktaskdepend(enddependset,channels):
                 countdepend = startlen+endlen
                 record=records.find_one_and_update({"taskid":main},{'$set':{"startdepends":startdepends,"enddepends":enddepends}})
                 if record:
@@ -252,7 +264,7 @@ def settaskdepends(dict):
 
 def checktaskdepend(dependset,channels):
     records = db.get_collection("task")
-    if dependset!=None:
+    if dependset!=None and dependset!=[]:
         try:
             for item in dependset:
                 check=records.find({"taskid":item},{"taskid":1}).distinct("taskid")[0]
@@ -278,11 +290,11 @@ def update_github(dict):
     githublink=None
     array = msg.split(" ")
     if checkUserRole(manager):
-        for z in array:
+        for split in array:
             try:
-                if z[0] != None and z[0] != " ":
-                    if z[0] == "-":
-                        if z == "-githublink":
+                if split != None and split != "":
+                    if split[0] == "-":
+                        if split == "-githublink":
                             githublink = array[count + 1]
             except:
                 break
@@ -334,14 +346,14 @@ def taskHold(dict):
     channel = dict.get("channel")
     array = msg.split(" ")
     if checkUserRole(manager):
-        for z in array:
-            if z[0] != None and z[0] != " ":
-                if z[0] == "-":
-                    if z == "-taskid":
+        for split in array:
+            if split != None and split != " ":
+                if split[0] == "-":
+                    if split == "-taskid":
                         taskid = array[count + 1]
-                    if z == "-startdate":
+                    if split == "-startdate":
                         startdate = array[count + 1]
-                    if z == "-days":
+                    if split == "-days":
                         days = int(array[count + 1])
             count = count + 1
         Task.taskforecast(taskid,startdate,days,channel)

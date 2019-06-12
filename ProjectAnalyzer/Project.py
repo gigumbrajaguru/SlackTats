@@ -57,28 +57,29 @@ def updateproject(dicts):
     count=0
     if checkUserRole(dicts.get("user")):
         array = msg.split(" ")
-        for z in array:
-            if z[0] == "-":
-                if z == "-projectid":
-                    projectid = array[count + 1]
-                if z == "-projectname":
-                    projectname = array[count + 1]
-                    projectmongoupdate(channels, projectid, "projectname", projectname,dicts)
-                if z == "-totalslack":
-                    totalslack = array[count + 1]
-                    projectmongoupdate(channels, projectid, "totalslack", totalslack,dicts)
-                if z == "-startdate":
-                    startdate = array[count + 1]
-                    projectmongoupdate(channels, projectid, "startdate", startdate,dicts)
-                if z == "-enddate":
-                    enddate = array[count + 1]
-                    projectmongoupdate(channels, projectid, "enddate", enddate,dicts)
-                if z == "-managerid":
-                    managerid = array[count + 1]
-                    projectmongoupdate(channels, projectid, "managerid", managerid,dicts)
-                if z == "-githublink":
-                    githublink = array[count + 1]
-                    projectmongoupdate(channels, projectid, "githublink", githublink,dicts)
+        for split in array:
+            if split!=None:
+                if split[0] == "-":
+                    if split == "-projectid":
+                        projectid = array[count + 1]
+                    if split == "-projectname":
+                        projectname = array[count + 1]
+                        projectmongoupdate(channels, projectid, "projectname", projectname,dicts)
+                    if split == "-totalslack":
+                        totalslack = array[count + 1]
+                        projectmongoupdate(channels, projectid, "totalslack", totalslack,dicts)
+                    if split == "-startdate":
+                        startdate = array[count + 1]
+                        projectmongoupdate(channels, projectid, "startdate", startdate,dicts)
+                    if split == "-enddate":
+                        enddate = array[count + 1]
+                        projectmongoupdate(channels, projectid, "enddate", enddate,dicts)
+                    if split == "-managerid":
+                        managerid = array[count + 1]
+                        projectmongoupdate(channels, projectid, "managerid", managerid,dicts)
+                    if split == "-githublink":
+                        githublink = array[count + 1]
+                        projectmongoupdate(channels, projectid, "githublink", githublink,dicts)
 
             count = count + 1
         text = "System updated!"
@@ -166,12 +167,13 @@ def checkcommit(channels,commit,repo):
     projectdocuments = db.get_collection("project")
     if len(commitarray) > 3:
         for word in commitarray:
-            if word == "projectid":
-                projectid = commitarray[count + 1]
-            if word == "taskid":
-                taskid = commitarray[count + 1]
-            if word == "taskname":
-                taskname = commitarray[count + 1]
+            if word !=None:
+                if word == "projectid":
+                    projectid = commitarray[count + 1]
+                if word == "taskid":
+                    taskid = commitarray[count + 1]
+                if word == "taskname":
+                    taskname = commitarray[count + 1]
             count = count + 1
         if projectid != [] and projectid != None:
             checkedcommits = projectdocuments.find({"projectid": projectid}).distinct("checkedcommits")
