@@ -9,6 +9,8 @@ db=connection.get_database("SlackTats")
 slack_token = "xoxb-402757429986-412087740598-8bGVF1HoEKEdfQws9aNDTeUM"
 sc = SlackClient(slack_token)
 datadictinary={}
+arrays=[]
+count=0
 
 def taskmongoupdate(channels,key,point,updates):
     record=None
@@ -147,6 +149,7 @@ def rightTask(taskid):
 def taskforecast(taskid,startdate,days,channels):
     endepend,startdepend,taskfree=None,None,None
     holdendyr, holdendmonth, holdenddate,remaindays=0,0,0,0
+
     try:
         documents = db.get_collection("task")
         taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
@@ -196,6 +199,7 @@ def taskforecast(taskid,startdate,days,channels):
                 if holdenddate>30:
                     holdendmonth=holdendmonth+1
                     holdenddate=xdays-(30-holdstrtdt)
+
         blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,
                      taskstrtmon,taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays)
     except:
@@ -205,200 +209,274 @@ def taskforecast(taskid,startdate,days,channels):
 
 def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth,holdenddate,taskstrtyr,taskstrtmon,
                  taskstrtdt,taskendyr,taskendmon,taskenddt,channels,days,remaindays):
-    remainstatus = 0
     #############################################################################
     if taskstrtyr == holdstrtyr and taskstrtmon==holdstrtmon and taskstrtdt==holdstrtdt:
-        remainstatus=1
-        startdependtask(channels,taskid, days,remaindays)
+        startdependtask(channels,taskid,remaindays)
     elif taskendyr==holdendyr and taskendmon==holdendmonth and taskenddt==holdenddate:
-        remainstatus=1
-        enddependtask(channels,taskid, days,remaindays)
+        enddependtask(channels,taskid,remaindays)
     #############################################################################
     elif taskstrtyr>holdstrtyr and taskendyr<holdendyr:
-        remainstatus=1
-        enddependtask(channels,taskid, days,remaindays)
-        startdependtask(channels, taskid, days, remaindays)
+        enddependtask(channels,taskid,remaindays)
+        startdependtask(channels, taskid, remaindays)
     elif taskstrtyr < holdstrtyr and taskendyr < holdendyr:
-        remainstatus=1
-        enddependtask(channels, taskid, days, remaindays)
+        enddependtask(channels, taskid, remaindays)
     elif taskstrtyr > holdstrtyr and taskendyr > holdendyr:
-        startdependtask(channels, taskid, days, remaindays)
+        startdependtask(channels, taskid, remaindays)
      ############################################################################
     elif taskstrtyr==holdstrtyr and taskendyr<holdendyr:
-        remainstatus = 1
-        enddependtask(channels,taskid, days,remaindays)
+        enddependtask(channels,taskid,remaindays)
         if  taskstrtmon > holdstrtmon :
-            startdependtask(channels, taskid, days, remaindays)
+            startdependtask(channels, taskid, remaindays)
         if taskstrtmon == holdstrtmon:
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
-                startdependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid,remaindays)
     elif taskstrtyr==holdstrtyr and taskendyr>holdendyr:
         if  taskstrtmon > holdstrtmon :
-            startdependtask(channels, taskid, days, remaindays)
+            startdependtask(channels, taskid, remaindays)
         if taskstrtmon == holdstrtmon:
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
-                startdependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid,remaindays)
     elif taskstrtyr>holdstrtyr and taskendyr==holdendyr:
-        print(10)
-        startdependtask(channels,taskid, days,remaindays)
+        startdependtask(channels,taskid,remaindays)
         if  taskendmon < holdendmonth :
-            remainstatus=1
-            enddependtask(channels, taskid, days, remaindays)
+            enddependtask(channels, taskid, remaindays)
         if taskendmon == holdendmonth:
             if taskenddt < holdenddate or taskenddt == holdenddate:
-                remainstatus=1
-                enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid,remaindays)
     elif taskstrtyr<holdstrtyr and taskendyr==holdendyr:
         if  taskendmon < holdendmonth :
-            remainstatus=1
-            enddependtask(channels, taskid, days, remaindays)
+            enddependtask(channels, taskid, remaindays)
         if taskendmon == holdendmonth:
             if taskenddt < holdenddate or taskenddt == holdenddate:
-                remainstatus=1
-                enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid,remaindays)
     #############################################################################
     elif taskstrtyr == holdstrtyr and taskendyr == holdendyr:
         if taskstrtmon < holdstrtmon and taskendmon < holdendmonth:
-            remainstatus=1
-            enddependtask(channels,taskid, days,remaindays)
+            enddependtask(channels,taskid,remaindays)
         elif taskstrtmon == holdstrtmon and taskendmon < holdendmonth:
-            remainstatus=1
-            enddependtask(channels,taskid, days,remaindays)
+            enddependtask(channels,taskid,remaindays)
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
-                startdependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid,remaindays)
         elif taskstrtmon == holdstrtmon and taskendmon > holdendmonth:
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
-                startdependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid,remaindays)
 
         elif taskstrtmon < holdstrtmon and taskendmon == holdendmonth:
             if taskenddt < holdenddate or taskenddt == holdenddate:
-                remainstatus=1
-                enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid,remaindays)
         elif taskstrtmon == holdstrtmon and taskendmon == holdendmonth:
             if taskstrtdt < holdstrtdt and taskenddt < holdenddate:
-                remainstatus=1
-                enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid,remaindays)
             elif taskstrtdt == holdstrtdt and taskenddt < holdenddate:
-                remainstatus=1
-                startdependtask(channels,taskid, days,remaindays)
-                enddependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid,remaindays)
+                enddependtask(channels,taskid,remaindays)
             elif taskstrtdt == holdstrtdt and taskenddt > holdenddate:
-                startdependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid,remaindays)
             elif taskstrtdt < holdstrtdt and taskenddt > holdenddate:
                 if remaindays!=0:
-                    enddependtask(channels,taskid, days,remaindays)
+                    enddependtask(channels,taskid,remaindays)
             elif taskstrtdt < holdstrtdt and taskenddt == holdenddate:
-                remainstatus=1
-                enddependtask(channels,taskid, days,remaindays)
+                enddependtask(channels,taskid,remaindays)
             elif taskstrtdt > holdstrtdt and taskenddt == holdenddate:
-                remainstatus=1
-                startdependtask(channels, taskid, days, remaindays)
-                enddependtask(channels,taskid, days,remaindays)
+                startdependtask(channels, taskid, remaindays)
+                enddependtask(channels,taskid,remaindays)
             elif taskstrtdt == holdstrtdt and taskenddt == holdenddate:
-                remainstatus=1
-                startdependtask(channels,taskid, days,remaindays)
-                enddependtask(channels,taskid, days,remaindays)
+                startdependtask(channels,taskid,remaindays)
+                enddependtask(channels,taskid,remaindays)
         else:
             text = "Please check your input again"
             SlackCommunication.postMessege(channels, text)
-        remainstatus=0
 
-def startdependtask(channels, taskid, days, remaindays):
+
+def startdependtask(channels, taskid, remaindays):
     documents = db.get_collection("task")
-    arrays = []
-    count = 0
-    endepends, startdepends = None, None
-    dependslist = documents.find({"taskid": taskid}).distinct("startdepends")
-    if dependslist!=None and dependslist!=[]:
-        dependslist=dependslist[0]
-        dependstartarray = dependslist.split(",")
-        for taskids in dependstartarray:
-            taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
-            taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
-            starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
-            endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
-            type = documents.find({"taskid": taskid}).distinct("type")[0]
-            status = documents.find({"taskid": taskid}).distinct("status")[0]
-            endepends = documents.find({"taskid": taskid}).distinct("enddepends")
-            startdepends = documents.find({"taskid": taskid}).distinct("startdepends")
-            if endepends!=None and endepends!=[]:
-                endepends=endepends[0]
-            if startdepends!=None and startdepends!=[]:
-                startdepends=startdepends[0]
-            if remaindays != None and remaindays != 0:
-                remaindays = remaindays - taskfree
-                if remaindays > taskfree:
-                    if status == "critical":
-                        text = "task " + taskid + " is  in critical stage. So its risk to hold task for " + str(
-                            remaindays) + " days."
-                        SlackCommunication.postMessege(channels, text)
-                    elif status != "fine" and status == "finished":
-                        text = "task " + taskid + " is in not good stage. So its risk to hold task for " + str(
-                            remaindays) + " days."
-                        SlackCommunication.postMessege(channels, text)
-                        if type == "important":
-                            text = "Also task " + taskid + " is important tasks "
-                            SlackCommunication.postMessege(channels, text)
+    startdependscountcheck,enddependscountcheck=0,0
+    taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
+    taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
+    starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
+    endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
+    type = documents.find({"taskid": taskid}).distinct("type")[0]
+    status = documents.find({"taskid": taskid}).distinct("status")[0]
+    endepends = documents.find({"taskid": taskid}).distinct("enddepends")
+    startdepends = documents.find({"taskid": taskid}).distinct("startdepends")
 
-            if startdepends != None and startdepends!=[]:
-                dependstartarray = startdepends.split(",")
-                for starttaskids in dependstartarray:
-                    startdependtask( channels,starttaskids, days, remaindays)
-            if endepends != None and endepends!=[] :
-                if periodCalculator(starttime, endtime)<remaindays or remaindays>taskfree:
-                    dependendarray = endepends.split(",")
-                    for endtaskids in dependendarray:
-                        startdependtask(channels, endtaskids, days, remaindays)
-            count = count + 1
+    if remaindays != None and remaindays > 0:
+        remaindays = remaindays - taskfree
+        if endepends != None and endepends != []:
+            endepends = endepends[0]
+            enddependscountcheck = 1
+        if startdepends != None and startdepends != []:
+            startdepends = startdepends[0]
+            startdependscountcheck = 2
+        dicarray = {
+            "taskids": taskid,
+            "taskprogress": taskprogress,
+            "type": type,
+            "taskfree": taskfree,
+            "starttime": starttime,
+            "endtime": endtime,
+            "status": status,
+            "endepends": endepends,
+            "startdepends": startdepends,
+            "remaindays": remaindays,
+            "dependtype":enddependscountcheck+startdependscountcheck
+        }
+        arrays.append(dicarray)
 
+        if startdepends!=None and startdepends!=[]:
+            startdepends=startdepends.split(",")
+            for taskid in startdepends:
+                arrays.append(taskinfomation(taskid, remaindays))
+        if endepends!=None and endepends!=[]:
+            endepends=endepends.split(",")
+            for taskid in endepends:
+                arrays.append(taskinfomation(taskid, remaindays))
+        
 
-
-def enddependtask(channels, taskid, days, remaindays):
-    text=None
+    else:
+        text = "Task hold process will end in "+taskid
+        SlackCommunication.postMessege(channels, text)
+        
+def taskinfomation(taskid, remaindays):
     documents = db.get_collection("task")
-    arrays = []
-    count=0
-    dependslist = documents.find({"taskid": taskid}).distinct("enddepends")
-    if dependslist!=None and dependslist!=[]:
-        dependslist=dependslist[0]
-        dependstartarray = dependslist.split(",")
-        for taskids in dependstartarray:
-            taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
-            taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
-            starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
-            endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
-            type = documents.find({"taskid": taskid}).distinct("type")[0]
-            status = documents.find({"taskid": taskid}).distinct("status")[0]
-            endepends = documents.find({"taskid": taskid}).distinct("enddepends")
-            startdepends = documents.find({"taskid": taskid}).distinct("startdepends")
-            if endepends!=None and endepends!=[]:
-                endepends=endepends[0]
-            if startdepends!=None and startdepends!=[]:
-                startdepends=startdepends[0]
-            if remaindays != None and remaindays != 0:
-                if remaindays > taskfree:
-                    remaindays = remaindays - taskfree
-                    if status == "critical" :
-                        text = "task " + taskid + " is  in critical stage. So its risk to hold task for " + str(remaindays) + " days."
-                        SlackCommunication.postMessege(channels, text)
-                    elif status != "fine" and status == "finished" :
-                        text = "task " + taskid + " is in not good stage. So its risk to hold task for " + str(
-                            remaindays) + " days."
-                        SlackCommunication.postMessege(channels, text)
-                        if type == "important":
-                            text = "Also task " + taskid + " is important tasks "
-                            SlackCommunication.postMessege(channels, text)
+    startdependscountcheck, enddependscountcheck = 0, 0
+    taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
+    taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
+    starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
+    endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
+    type = documents.find({"taskid": taskid}).distinct("type")[0]
+    status = documents.find({"taskid": taskid}).distinct("status")[0]
+    endepends = documents.find({"taskid": taskid}).distinct("enddepends")
+    startdepends = documents.find({"taskid": taskid}).distinct("startdepends")
 
-            if startdepends != None and startdepends!=[]:
-                dependstartarray = startdepends.split(",")
-                for starttaskids in dependstartarray:
-                    startdependtask(channels,starttaskids, days, remaindays)
-            if endepends != None and startdepends!=[]:
-                if periodCalculator(starttime, endtime) < remaindays or remaindays > taskfree:
-                    dependendarray = endepends.split(",")
-                    for endtaskids in dependendarray:
-                        startdependtask(channels,endtaskids, days, remaindays)
-            count = count + 1
+    if remaindays != None and remaindays > 0:
+        remaindays = remaindays - taskfree
+        if endepends != None and endepends != []:
+            endepends = endepends[0]
+            enddependscountcheck = 1
+        if startdepends != None and startdepends != []:
+            startdepends = startdepends[0]
+            startdependscountcheck = 2
+        dicarray = {
+            "taskids": taskid,
+            "taskprogress": taskprogress,
+            "type": type,
+            "taskfree": taskfree,
+            "starttime": starttime,
+            "endtime": endtime,
+            "status": status,
+            "endepends": endepends,
+            "startdepends": startdepends,
+            "remaindays": remaindays,
+            "dependtype": enddependscountcheck + startdependscountcheck
+        }
+        return dicarray
+
+
+
+
+def enddependtask(channels, taskid, remaindays):
+    documents = db.get_collection("task")
+    startdependscountcheck, enddependscountcheck = 0, 0
+    taskprogress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
+    taskfree = int(documents.find({"taskid": taskid}).distinct("freeslack")[0])
+    starttime = documents.find({"taskid": taskid}).distinct("starttime")[0]
+    endtime = documents.find({"taskid": taskid}).distinct("endtime")[0]
+    type = documents.find({"taskid": taskid}).distinct("type")[0]
+    status = documents.find({"taskid": taskid}).distinct("status")[0]
+    endepends = documents.find({"taskid": taskid}).distinct("enddepends")
+    startdepends = documents.find({"taskid": taskid}).distinct("startdepends")
+
+    if remaindays != None and remaindays != 0:
+        remaindays = remaindays - taskfree
+        if remaindays > taskfree:
+            if status == "critical":
+                text = "task " + taskid + " is  in critical stage. So its risk to hold task for " + str(
+                    remaindays) + " days."
+                SlackCommunication.postMessege(channels, text)
+            elif status != "fine" and status != "finished":
+                text = "task " + taskid + " is in not good stage. So its risk to hold task for " + str(
+                    remaindays) + " days."
+                SlackCommunication.postMessege(channels, text)
+                if type == "important":
+                    text = "Also task " + taskid + " is important tasks "
+                    SlackCommunication.postMessege(channels, text)
+            else:
+                text = "Task status is" + status
+                SlackCommunication.postMessege(channels, text)
+                if remaindays > 0:
+                    text = "But holding more than free slack is risk"
+                    SlackCommunication.postMessege(channels, text)
+        else:
+            text = "task " + taskid + " has free slack than holding days( " + str(remaindays) + ") days."
+            SlackCommunication.postMessege(channels, text)
+    else:
+        text = "No record of holding dates.Possible to hold task "
+        SlackCommunication.postMessege(channels, text)
+
+    if endepends != None and endepends != []:
+        endepends = endepends[0]
+        enddependscountcheck = 1
+    if startdepends != None and startdepends != []:
+        startdepends = startdepends[0]
+        startdependscountcheck = 1
+    if startdependscountcheck == 0 and status != "fine" and status != "finished":
+        text = "Task " + taskid + " has no start-dependencies. but task is in risky status"
+        SlackCommunication.postMessege(channels, text)
+    elif startdependscountcheck == 0 and status == "fine" and status == "finished":
+        text = "Task " + taskid + " has no start-dependencies. but task is not in risky status"
+        SlackCommunication.postMessege(channels, text)
+    elif enddependscountcheck == 0 and status != "fine" and status != "finished":
+        text = "Task " + taskid + " has no end-dependencies.but task is in risky status"
+        SlackCommunication.postMessege(channels, text)
+    elif enddependscountcheck == 0 and status == "fine" and status == "finished":
+        text = "Task " + taskid + " has no end-dependencies. but task is not in risky status"
+        SlackCommunication.postMessege(channels, text)
+
+    dicarray = {
+        "taskids": taskid,
+        "parenttask": taskid,
+        "taskprogress": taskprogress,
+        "type": type,
+        "taskfree": taskfree,
+        "starttime": starttime,
+        "endtime": endtime,
+        "status": status,
+        "endepends": endepends,
+        "startdepends": startdepends,
+        "remaindays": remaindays,
+    }
+    arrays.append(dicarray)
+
+
+
+def informationsender(remaindays,taskfree,taskid,channels,status,startdependscountcheck,enddependscountcheck):
+        if remaindays > taskfree:
+            if status == "critical":
+                text = "task " + taskid + " is  in critical stage. So its risk to hold task for " + str(
+                    remaindays) + " days."
+                SlackCommunication.postMessege(channels, text)
+            elif status != "fine" and status != "finished":
+                text = "task " + taskid + " is in not good stage. So its risk to hold task for " + str(
+                    remaindays) + " days."
+                SlackCommunication.postMessege(channels, text)
+                if type == "important":
+                    text = "Also task " + taskid + " is important tasks "
+                    SlackCommunication.postMessege(channels, text)
+            else:
+                text = "Task status is" + status
+                SlackCommunication.postMessege(channels, text)
+                if remaindays > 0:
+                    text = "But holding more than free slack is risk"
+                    SlackCommunication.postMessege(channels, text)
+        else:
+            text = "task " + taskid + " can hold " + str(remaindays) + " days."
+            SlackCommunication.postMessege(channels, text)
+
+
+
+
+
 
 
 def periodCalculator(starttimes, endtimes):
