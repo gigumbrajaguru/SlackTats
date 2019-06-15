@@ -4,13 +4,12 @@ from slackclient import SlackClient
 import pymongo
 import os
 from git import Repo
+import UserManager
 from ProjectAnalyzer import SlackCommunication
 from ProjectAnalyzer import Task
 from textblob import TextBlob
 from fuzzywuzzy import fuzz
 import nltk
-
-
 
 nltk.download('wordnet')
 nltk.download("punkt")
@@ -21,21 +20,11 @@ sc = SlackClient(slack_token)
 completioncases={"completed":"completed","finished":"finished","fixed":"fixed","percentage":"percentage","removed":"removed"}
 repo=None
 
-def checkUserRole(manger):
-    collection=db.get_collection("user")
-    documentcount=collection.count_documents({"userid":manger})
-    if documentcount==1:
-        if collection.count_documents({"roleid":"2"}):
-            return True
-        else:
-            return False
-    else:
-        return False
 
 
 def projectmongoupdate(channels,key,point,updates,dicts):
     records = db.get_collection("project")
-    if checkUserRole(dicts.get("user")):
+    if UserManager.checkUserRole(dicts.get("user")):
         record = records.find_one_and_update({"projectid": key}, {'$set': {point: updates}})
         if record!=None:
             text = "Data Updated"
@@ -55,7 +44,7 @@ def updateproject(dicts):
     channels = dicts.get("channel")
     msg = dicts.get("text")
     count=0
-    if checkUserRole(dicts.get("user")):
+    if UserManager.checkUserRole(dicts.get("user")):
         array = msg.split(" ")
         for split in array:
             if split!=None:
@@ -94,7 +83,7 @@ def connectGithub(channels,managerid):
         documents = db.get_collection("project")
 
         paths="../Projects/rep"
-        if checkUserRole(managerid):
+        if UserManager.checkUserRole(managerid):
             try:
                 gitlink = documents.find({"managerid": managerid}).distinct("githublink")[0]
                 if gitlink != None:

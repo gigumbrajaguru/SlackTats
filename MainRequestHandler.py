@@ -31,7 +31,7 @@ if sc.rtm_connect():
                     if array[0] == "-registergithub":
                         ProjectAnalyzer.update_github(dict)
                     if array[0] == "-registerprojectmanager":
-                        ProjectAnalyzer.register_ProjectManager(dict)
+                        UserManager.register_ProjectManager(dict)
                     if array[0] == "-createtasks":
                         ProjectAnalyzer.create_Task(dict)
                     if array[0] == "-setdepends":
@@ -51,6 +51,8 @@ if sc.rtm_connect():
                     if array[0] == "-workassigner":
                         UserManager.workassigner(dict)
                     if array[0] == "-deleteuser":
+                        UserManager.deleteUser(dict)
+                    if array[0] == "-deletetask":
                         UserManager.deleteUser(dict)
                 if dict.get('type') == "user_typing":
                     typecount = typecount + 1

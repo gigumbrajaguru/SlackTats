@@ -1,29 +1,12 @@
 from slackclient import SlackClient
 import pymongo
 from ProjectAnalyzer import SlackCommunication,Project,Task
+import UserManager
 connection=pymongo.MongoClient("mongodb://localhost:27017/")
 db=connection.get_database("SlackTats")
 slack_token = "xoxb-402757429986-412087740598-8bGVF1HoEKEdfQws9aNDTeUM"
 sc = SlackClient(slack_token)
 
-def checkUserRole(manger):
-    collection=db.get_collection("user")
-    if collection.find({"userid":manger,"roleid":"2"}).count():
-        return True
-    else:
-        return False
-
-def register_ProjectManager(dict):
-    manager=dict.get("user")
-    channel=dict.get("channel")
-    records=db.get_collection("user")
-    if records.find({"roleid":"2"}).count()==0:
-        record=records.find_one_and_update({"userid":manager},{'$set':{"roleid":"2"}})
-        text = "User <@" + manager + "> assinged to Manage this project"
-        SlackCommunication.postMessege(channel,text)
-    elif records.find({"userid":manager,"roleid":"2"}).count()==1:
-        text = "Only one can be a project manager"
-        SlackCommunication.postMessege(channel, text)
 
 
 def dateValidation(manager,projectid,starttime,endtime):
@@ -118,7 +101,7 @@ def create_Task(dict):
     manager = dict.get("user")
     channel = dict.get("channel")
     count = 0
-    if checkUserRole(manager):
+    if UserManager.checkUserRole(manager):
         taskname=None
         taskid=None
         projectid=None
@@ -130,10 +113,10 @@ def create_Task(dict):
         array = msg.split(" ")
 
         for split in array:
-            if split[0]!=None and split[0]!=" ":
+            if split!=None and split!=" ":
                 if split[0] == "-":
                     if split == "-taskname":
-                        taskname = array[count+1 ]
+                        taskname = array[count+1]
                     if split == "-taskid":
                         taskid = array[count + 1]
                     if split == "-projectid":
@@ -170,7 +153,7 @@ def register_Project(dict):
     user=dict.get("user")
     msg = dict.get("text")
     channels = dict.get("channel")
-    if checkUserRole(user):
+    if UserManager.checkUserRole(user):
         projectid,projectname,startdate,enddate,totalslack=None,None,None,None,None
         array = msg.split(" ")
         for split in array:
@@ -211,7 +194,7 @@ def settaskdepends(dict):
     msg = dict.get("text")
     channels = dict.get("channel")
     user=dict.get("user")
-    if checkUserRole(user):
+    if UserManager.checkUserRole(user):
         main,startdepends,enddepends=None,None,None
         array = msg.split(" ")
         for split in array:
@@ -295,7 +278,7 @@ def update_github(dict):
     ts=dict.get("ts")
     githublink=None
     array = msg.split(" ")
-    if checkUserRole(manager):
+    if UserManager.checkUserRole(manager):
         for split in array:
             try:
                 if split != None and split != "":
@@ -311,7 +294,7 @@ def update_github(dict):
             text = "User command is incomplete. Please input right command to proceed"
             SlackCommunication.postMessege(channel, text)
         else:
-            if checkUserRole(manager) and githublink!=None:
+            if UserManager.checkUserRole(manager) and githublink!=None:
                 githublink=githublink[1:]
                 githublink=githublink[:-1]
                 githublink=githublink.split("|")[0]
@@ -323,15 +306,13 @@ def update_github(dict):
         SlackCommunication.postMessege(channel, text)
 
 def taskContent(dict):
-    count = 3
     msg = dict.get("text")
     records = db.get_collection("task")
     manager = dict.get("user")
     channel = dict.get("channel")
-    ts = dict.get("ts")
     arraycontent=[]
     array = msg.split(" ")
-    if checkUserRole(manager):
+    if UserManager.checkUserRole(manager):
         taskid, content= None, None
         if array[0]=="-taskcontent" and array[1]=="-taskid" and array[3]=="-projectid":
             for x in range(5,len(array)):
@@ -341,6 +322,9 @@ def taskContent(dict):
                 '$set': {"taskcontent": objectives}}):
                 text="Data updated"
                 SlackCommunication.postMessege(channel,text)
+    else:
+        text = "Only project manager can perform this command"
+        SlackCommunication.postMessege(channel, text)
 
 def checkTaskStatus(taskid):
     return Task.taskstatus(taskid)
@@ -351,7 +335,7 @@ def taskHold(dict):
     manager = dict.get("user")
     channel = dict.get("channel")
     array = msg.split(" ")
-    if checkUserRole(manager):
+    if UserManager.checkUserRole(manager):
         for split in array:
             if split != None and split != " ":
                 if split[0] == "-":
@@ -363,6 +347,9 @@ def taskHold(dict):
                         days = int(array[count + 1])
             count = count + 1
         Task.taskforecast(taskid,startdate,days,channel)
+    else:
+        text = "Only project manager can perform this command"
+        SlackCommunication.postMessege(channel, text)
 
 def listCheck(idlist,submittedidlist):
     if idlist!=None and idlist!=[] and submittedidlist!=None and submittedidlist!=[]:

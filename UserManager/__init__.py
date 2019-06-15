@@ -1,5 +1,4 @@
 import re
-from ProjectAnalyzer import checkUserRole
 from slackclient import SlackClient
 import pymongo
 from ProjectAnalyzer import SlackCommunication,Project,Task
@@ -127,3 +126,24 @@ def deleteUser(dict):
         else:
             text = "Check input again."
             SlackCommunication.postMessege(channel, text)
+
+
+
+def checkUserRole(manger):
+    collection=db.get_collection("user")
+    if collection.find({"userid":manger,"roleid":"2"}).count():
+        return True
+    else:
+        return False
+
+def register_ProjectManager(dict):
+    manager=dict.get("user")
+    channel=dict.get("channel")
+    records=db.get_collection("user")
+    if records.find({"roleid":"2"}).count()==0:
+        record=records.find_one_and_update({"userid":manager},{'$set':{"roleid":"2"}})
+        text = "User <@" + manager + "> assinged to Manage this project"
+        SlackCommunication.postMessege(channel,text)
+    elif records.find({"userid":manager,"roleid":"2"}).count()==1:
+        text = "Only one can be a project manager"
+        SlackCommunication.postMessege(channel, text)

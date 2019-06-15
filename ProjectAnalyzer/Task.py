@@ -1,7 +1,7 @@
 from slackclient import SlackClient
 import pymongo
 import math
-
+import UserManager
 from ProjectAnalyzer import SlackCommunication,Project
 
 connection=pymongo.MongoClient("mongodb://localhost:27017/")
@@ -23,7 +23,7 @@ def checkAlltaskdetails(dicts):
     channels = dicts.get("channel")
     manager=dicts.get("user")
     msg = dicts.get("text")
-    if Project.checkUserRole(manager):
+    if UserManager.checkUserRole(manager):
         count=0
         array = msg.split(" ")
         for split in array:
@@ -210,21 +210,21 @@ def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth
     if taskstrtyr == holdstrtyr and taskstrtmon==holdstrtmon and taskstrtdt==holdstrtdt:
         remainstatus=1
         startdependtask(channels,taskid, days,remaindays)
-    if taskendyr==holdendyr and taskendmon==holdendmonth and taskenddt==holdenddate:
+    elif taskendyr==holdendyr and taskendmon==holdendmonth and taskenddt==holdenddate:
         remainstatus=1
         enddependtask(channels,taskid, days,remaindays)
     #############################################################################
-    if taskstrtyr>holdstrtyr and taskendyr<holdendyr:
+    elif taskstrtyr>holdstrtyr and taskendyr<holdendyr:
         remainstatus=1
         enddependtask(channels,taskid, days,remaindays)
         startdependtask(channels, taskid, days, remaindays)
-    if taskstrtyr < holdstrtyr and taskendyr < holdendyr:
+    elif taskstrtyr < holdstrtyr and taskendyr < holdendyr:
         remainstatus=1
         enddependtask(channels, taskid, days, remaindays)
-    if taskstrtyr > holdstrtyr and taskendyr > holdendyr:
+    elif taskstrtyr > holdstrtyr and taskendyr > holdendyr:
         startdependtask(channels, taskid, days, remaindays)
      ############################################################################
-    if taskstrtyr==holdstrtyr and taskendyr<holdendyr:
+    elif taskstrtyr==holdstrtyr and taskendyr<holdendyr:
         remainstatus = 1
         enddependtask(channels,taskid, days,remaindays)
         if  taskstrtmon > holdstrtmon :
@@ -232,13 +232,14 @@ def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth
         if taskstrtmon == holdstrtmon:
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
                 startdependtask(channels,taskid, days,remaindays)
-    if taskstrtyr==holdstrtyr and taskendyr>holdendyr:
+    elif taskstrtyr==holdstrtyr and taskendyr>holdendyr:
         if  taskstrtmon > holdstrtmon :
             startdependtask(channels, taskid, days, remaindays)
         if taskstrtmon == holdstrtmon:
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
                 startdependtask(channels,taskid, days,remaindays)
-    if taskstrtyr>holdstrtyr and taskendyr==holdendyr:
+    elif taskstrtyr>holdstrtyr and taskendyr==holdendyr:
+        print(10)
         startdependtask(channels,taskid, days,remaindays)
         if  taskendmon < holdendmonth :
             remainstatus=1
@@ -247,7 +248,7 @@ def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth
             if taskenddt < holdenddate or taskenddt == holdenddate:
                 remainstatus=1
                 enddependtask(channels,taskid, days,remaindays)
-    if taskstrtyr<holdstrtyr and taskendyr==holdendyr:
+    elif taskstrtyr<holdstrtyr and taskendyr==holdendyr:
         if  taskendmon < holdendmonth :
             remainstatus=1
             enddependtask(channels, taskid, days, remaindays)
@@ -256,49 +257,50 @@ def blockedTasks(taskid,holdstrtyr,holdstrtmon,holdstrtdt,holdendyr,holdendmonth
                 remainstatus=1
                 enddependtask(channels,taskid, days,remaindays)
     #############################################################################
-    if taskstrtyr == holdstrtyr and taskendyr == holdendyr:
+    elif taskstrtyr == holdstrtyr and taskendyr == holdendyr:
         if taskstrtmon < holdstrtmon and taskendmon < holdendmonth:
             remainstatus=1
             enddependtask(channels,taskid, days,remaindays)
-        if taskstrtmon == holdstrtmon and taskendmon < holdendmonth:
+        elif taskstrtmon == holdstrtmon and taskendmon < holdendmonth:
             remainstatus=1
             enddependtask(channels,taskid, days,remaindays)
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
                 startdependtask(channels,taskid, days,remaindays)
-        if taskstrtmon == holdstrtmon and taskendmon > holdendmonth:
+        elif taskstrtmon == holdstrtmon and taskendmon > holdendmonth:
             if taskstrtdt > holdstrtdt or taskstrtdt == holdstrtdt:
                 startdependtask(channels,taskid, days,remaindays)
 
-        if taskstrtmon < holdstrtmon and taskendmon == holdendmonth:
+        elif taskstrtmon < holdstrtmon and taskendmon == holdendmonth:
             if taskenddt < holdenddate or taskenddt == holdenddate:
                 remainstatus=1
                 enddependtask(channels,taskid, days,remaindays)
-        if taskstrtmon == holdstrtmon and taskendmon == holdendmonth:
+        elif taskstrtmon == holdstrtmon and taskendmon == holdendmonth:
             if taskstrtdt < holdstrtdt and taskenddt < holdenddate:
                 remainstatus=1
                 enddependtask(channels,taskid, days,remaindays)
-            if taskstrtdt == holdstrtdt and taskenddt < holdenddate:
+            elif taskstrtdt == holdstrtdt and taskenddt < holdenddate:
                 remainstatus=1
                 startdependtask(channels,taskid, days,remaindays)
                 enddependtask(channels,taskid, days,remaindays)
-            if taskstrtdt == holdstrtdt and taskenddt > holdenddate:
+            elif taskstrtdt == holdstrtdt and taskenddt > holdenddate:
                 startdependtask(channels,taskid, days,remaindays)
-            if taskstrtdt < holdstrtdt and taskenddt > holdenddate:
+            elif taskstrtdt < holdstrtdt and taskenddt > holdenddate:
                 if remaindays!=0:
                     enddependtask(channels,taskid, days,remaindays)
-            if taskstrtdt < holdstrtdt and taskenddt == holdenddate:
+            elif taskstrtdt < holdstrtdt and taskenddt == holdenddate:
                 remainstatus=1
                 enddependtask(channels,taskid, days,remaindays)
-            if taskstrtdt > holdstrtdt and taskenddt == holdenddate:
+            elif taskstrtdt > holdstrtdt and taskenddt == holdenddate:
                 remainstatus=1
                 startdependtask(channels, taskid, days, remaindays)
                 enddependtask(channels,taskid, days,remaindays)
-            if taskstrtdt == holdstrtdt and taskenddt == holdenddate:
+            elif taskstrtdt == holdstrtdt and taskenddt == holdenddate:
                 remainstatus=1
                 startdependtask(channels,taskid, days,remaindays)
                 enddependtask(channels,taskid, days,remaindays)
-        if remaindays != 0 and remainstatus==0:
-            enddependtask(channels, taskid, days, remaindays)
+        else:
+            text = "Please check your input again"
+            SlackCommunication.postMessege(channels, text)
         remainstatus=0
 
 def startdependtask(channels, taskid, days, remaindays):
@@ -326,27 +328,18 @@ def startdependtask(channels, taskid, days, remaindays):
             if remaindays != None and remaindays != 0:
                 remaindays = remaindays - taskfree
                 if remaindays > taskfree:
-                    if status != "fine" or status != "finished":
-                        text = "task " + taskid + " is not in good status. So its risk to hold task for " + str(remaindays) + " days."
+                    if status == "critical":
+                        text = "task " + taskid + " is  in critical stage. So its risk to hold task for " + str(
+                            remaindays) + " days."
+                        SlackCommunication.postMessege(channels, text)
+                    elif status != "fine" and status == "finished":
+                        text = "task " + taskid + " is in not good stage. So its risk to hold task for " + str(
+                            remaindays) + " days."
                         SlackCommunication.postMessege(channels, text)
                         if type == "important":
                             text = "Also task " + taskid + " is important tasks "
                             SlackCommunication.postMessege(channels, text)
 
-            dicarray = {
-                    "taskids": taskids,
-                    "parenttask": taskid,
-                    "taskprogress": taskprogress,
-                    "type": type,
-                    "taskfree": taskfree,
-                    "starttime": starttime,
-                    "endtime": endtime,
-                    "status": status,
-                    "endepends": endepends,
-                    "startdepends": startdepends,
-                    "remaindays": remaindays
-            }
-            arrays.append(dicarray)
             if startdepends != None and startdepends!=[]:
                 dependstartarray = startdepends.split(",")
                 for starttaskids in dependstartarray:
@@ -358,11 +351,10 @@ def startdependtask(channels, taskid, days, remaindays):
                         startdependtask(channels, endtaskids, days, remaindays)
             count = count + 1
 
-        return arrays
 
 
 def enddependtask(channels, taskid, days, remaindays):
-    print(taskid, remaindays)
+    text=None
     documents = db.get_collection("task")
     arrays = []
     count=0
@@ -386,25 +378,17 @@ def enddependtask(channels, taskid, days, remaindays):
             if remaindays != None and remaindays != 0:
                 if remaindays > taskfree:
                     remaindays = remaindays - taskfree
-                    if status != "fine" or status != "finished":
-                        text = "task " + taskid + " is not in good status. So its risk to hold task for " + str(remaindays) + " days."
+                    if status == "critical" :
+                        text = "task " + taskid + " is  in critical stage. So its risk to hold task for " + str(remaindays) + " days."
+                        SlackCommunication.postMessege(channels, text)
+                    elif status != "fine" and status == "finished" :
+                        text = "task " + taskid + " is in not good stage. So its risk to hold task for " + str(
+                            remaindays) + " days."
                         SlackCommunication.postMessege(channels, text)
                         if type == "important":
                             text = "Also task " + taskid + " is important tasks "
                             SlackCommunication.postMessege(channels, text)
 
-            dicarray = {"taskids": taskids,
-                        "taskprogress": taskprogress,
-                        "type": type,
-                        "taskfree": taskfree,
-                        "starttime": starttime,
-                        "endtime": endtime,
-                        "status": status,
-                        "endepends": endepends,
-                        "startdepends": startdepends,
-                        "remaindays": remaindays
-                        }
-            arrays.append(dicarray)
             if startdepends != None and startdepends!=[]:
                 dependstartarray = startdepends.split(",")
                 for starttaskids in dependstartarray:
@@ -415,7 +399,6 @@ def enddependtask(channels, taskid, days, remaindays):
                     for endtaskids in dependendarray:
                         startdependtask(channels,endtaskids, days, remaindays)
             count = count + 1
-        return arrays
 
 
 def periodCalculator(starttimes, endtimes):
@@ -449,6 +432,30 @@ def duplicateChecker(variable,value,table):
         return True
     else:
         return False
+
+
+
+def deleteTask(dict):
+    user = dict.get("user")
+    count=0
+    taskid=None
+    channel = dict.get("channel")
+    msg = dict.get("text")
+    array = msg.split(" ")
+    for split in array:
+        if split == "-taskid":
+            taskid = array[count + 1]
+        count = count + 1
+    records = db.get_collection("task")
+    if taskid != None and taskid!="" and UserManager.checkUserRole(user):
+        taskdetails = {"taskid": taskid }
+        check=records.delete_one(taskdetails).acknowledged
+        if check:
+            text =  taskid + " Task deleted."
+            SlackCommunication.postMessege(channel, text)
+        else:
+            text = "Check input again."
+            SlackCommunication.postMessege(channel, text)
 
 
 
