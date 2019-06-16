@@ -8,7 +8,7 @@ from slackclient import SlackClient
 
 slack_token = "xoxb-402757429986-412087740598-8bGVF1HoEKEdfQws9aNDTeUM"
 sc = SlackClient(slack_token)
-statuscheckvalue=1000
+statuscheckvalue=10
 if sc.rtm_connect():
     typecount=0
     while sc.server.connected is False:

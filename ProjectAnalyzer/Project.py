@@ -81,7 +81,6 @@ def updateproject(dicts):
 
 def connectGithub(channels,managerid):
         documents = db.get_collection("project")
-
         paths="../Projects/rep"
         if UserManager.checkUserRole(managerid):
             try:
@@ -142,7 +141,7 @@ def checkcommit(channels,commit,repo):
         if projectid != None and taskid != None and taskname != None:
             taskcontentarray = documents.find({"taskname": taskname, "taskid": taskid, "projectid": projectid}).distinct("taskcontent")
             if taskcontentarray!=[] and taskcontentarray!=None:
-                taskcontentarray=taskcontentarray[0].split(" #")
+                taskcontentarray=taskcontentarray[0].split("#")
 
         else:
             text = "Skip one commit message : Not according to structure"
@@ -169,20 +168,25 @@ def checkcommit(channels,commit,repo):
                             counts = counts + 1
                             for turns in commitscontent:
                                 if turns != '':
+                                    print("1111")
+                                    print(rep)
+                                    print(turns)
                                     ratio = fuzz.ratio(str(turns), str(rep))
                                     print(ratio)
-                                    if ratio == 100:
+                                    if ratio < 90:
                                         completedsubtasks = completedsubtasks + 1
                                     elif TextBlob(turns).words.count('Completed') > 0 and ratio > 59:
                                         completedsubtasks = completedsubtasks + 1
                                     elif TextBlob(turns).words.count('Finished') > 0 and ratio > 59:
                                         completedsubtasks = completedsubtasks + 1
+
                                     if TextBlob(turns).words.count('tested') > 1 or TextBlob(
                                             turns).words.count('verified') > 1:
                                         istest = 10
+                print(completedsubtasks,counts)
                 if completedsubtasks > 0 and counts > 0:
                     commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
-                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": commitcompletion}})
+                    documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": str(commitcompletion)}})
                     if (commitcompletion == 100):
                         documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "finished"}})
                     if (commitcompletion > 90):
