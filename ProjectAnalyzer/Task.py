@@ -21,6 +21,7 @@ def taskmongoupdate(channels,key,point,updates):
         SlackCommunication.postMessege(channels, text)
 
 def checkAlltaskdetails(dicts):
+    taskid,taskname,strtdate,enddate,totalslack,type,status,enddepends,strtsdepends=None,None,None,None,None,None,None,None,None
     documents = db.get_collection("task")
     channels = dicts.get("channel")
     manager=dicts.get("user")
@@ -33,20 +34,29 @@ def checkAlltaskdetails(dicts):
                 if split[0] == "-":
                     if split == "-projectid":
                         projectid = array[count + 1]
-                        taskname=documents.find({"projectid": projectid}).distinct("taskname")
-                        taskid = documents.find({"projectid": projectid}).distinct("taskid")
-                        strtdate = documents.find({"projectid": projectid}).distinct("starttime")
-                        enddate = documents.find({"projectid": projectid}).distinct("endtime")
-                        totalslack = documents.find({"projectid": projectid}).distinct("freeslack")
-                        type=documents.find({"projectid": projectid}).distinct("type")
-                        status=documents.find({"projectid": projectid}).distinct("status")
-                        enddepends=documents.find({"projectid": projectid}).distinct("enddepends")
-                        strtsdepends = documents.find({"projectid": projectid}).distinct("startdepends")
+                        taskids = documents.find({"projectid": projectid}).distinct("taskid")
+
             count=count+1
-        for x in range(len(taskid)):
-            text=">Task name : "+taskname[x]+" Task ID : "+taskid[x]+" Start date : "+strtdate[x]+\
-                 " End date : "+enddate[x]+" \n "+" Total Slack : "+totalslack[x]+" Type : "+type[x]+\
-                 " Status : "+status[x]+"  Depends : "+enddepends[x]+" Start depends :" + strtsdepends[x]
+        for taskid in taskids:
+            taskname = documents.find({"taskid": taskid}).distinct("taskname")[0]
+            strtdate = documents.find({"taskid": taskid}).distinct("starttime")[0]
+            enddate = documents.find({"taskid": taskid}).distinct("endtime")[0]
+            totalslack = documents.find({"taskid": taskid}).distinct("freeslack")[0]
+            type = documents.find({"taskid": taskid}).distinct("type")[0]
+            status = documents.find({"taskid": taskid}).distinct("status")[0]
+            enddepends = documents.find({"taskid": taskid}).distinct("enddepends")
+            strtsdepends = documents.find({"taskid": taskid}).distinct("startdepends")
+            if enddepends!=None and enddepends!=[] and enddepends!=[None]:
+                enddepends=enddepends[0]
+            else:
+                enddepends="no depends"
+            if strtsdepends!=None and strtsdepends!=[] and strtsdepends!=[None]:
+                strtsdepends=strtsdepends[0]
+            else:
+                strtsdepends="no depends"
+            text="\n Task name : "+taskname+" Task ID : "+taskid+"\n Start date : "+strtdate+\
+                 " End date : "+enddate+" \n "+" Total Slack : "+totalslack+"\n Type : "+type+\
+                 " Status : "+status+"\n  Depends : "+enddepends+" Start depends :" + strtsdepends
             SlackCommunication.postMessege(channels,text)
     else:
         text = "Only manager can perform this command"
@@ -321,7 +331,7 @@ def startdependtask(channels, taskid, remaindays):
         subTaskcheck(arrays,remaindays,1,channels)
 
     else:
-        text = "Task hold process will end in "+taskid
+        text = "Task can hold till requested days."
         SlackCommunication.postMessege(channels, text)
 
 def subTaskcheck(arrays,remaindays,depend,channels):
@@ -361,6 +371,8 @@ def taskinfomation(taskid, remaindays):
 
     if remaindays != None and remaindays > 0:
         remaindays = remaindays - taskfree
+        if remaindays<0:
+            remaindays=0
         if endepends != None and endepends != []:
             endepends = endepends[0]
         if startdepends != None and startdepends != []:
@@ -392,6 +404,8 @@ def enddependtask(channels, taskid, remaindays):
 
     if remaindays != None and remaindays > 0:
         remaindays = remaindays - taskfree
+        if remaindays<0:
+            remaindays=0
         if endepends != None and endepends != []:
             endepends = endepends[0]
         if startdepends != None and startdepends != []:
@@ -411,7 +425,7 @@ def enddependtask(channels, taskid, remaindays):
         arrays.append(dicarray)
         subTaskcheck(arrays, remaindays,2,channels)
     else:
-        text = "Task hold process will end in " + taskid
+        text = "Task can hold till requested days."
         SlackCommunication.postMessege(channels, text)
 
 def informationsender(remaindays,taskfree,taskid,channels,status,type):

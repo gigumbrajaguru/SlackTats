@@ -105,7 +105,7 @@ def connectGithub(channels,managerid):
                     text = 'Link Github repository.'
                     SlackCommunication.postMessege(channels, text)
             except:
-                text = 'Complete project registeration first'
+                text = 'Complete github link registration'
                 SlackCommunication.postMessege(channels, text)
 
 
@@ -168,11 +168,7 @@ def checkcommit(channels,commit,repo):
                             counts = counts + 1
                             for turns in commitscontent:
                                 if turns != '':
-                                    print("1111")
-                                    print(rep)
-                                    print(turns)
                                     ratio = fuzz.ratio(str(turns), str(rep))
-                                    print(ratio)
                                     if ratio < 90:
                                         completedsubtasks = completedsubtasks + 1
                                     elif TextBlob(turns).words.count('Completed') > 0 and ratio > 59:
@@ -183,15 +179,14 @@ def checkcommit(channels,commit,repo):
                                     if TextBlob(turns).words.count('tested') > 1 or TextBlob(
                                             turns).words.count('verified') > 1:
                                         istest = 10
-                print(completedsubtasks,counts)
                 if completedsubtasks > 0 and counts > 0:
                     commitcompletion = ((completedsubtasks / counts) * 100) - 10 + istest
                     documents.find_one_and_update({"taskid": taskid}, {'$set': {"taskprogress": str(commitcompletion)}})
                     if (commitcompletion == 100):
                         documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "finished"}})
-                    if (commitcompletion > 90):
+                    if (commitcompletion > 85):
                         documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "fine"}})
-                    elif (commitcompletion > 50 and commitcompletion < 90):
+                    elif (commitcompletion > 50 and commitcompletion < 85):
                         documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "working"}})
                     elif (commitcompletion < 50):
                         documents.find_one_and_update({"taskid": taskid}, {'$set': {"status": "critical"}})
@@ -228,7 +223,7 @@ def statusUpdater(dict):
                 currentremain=Task.periodCalculator(checkdate,tasktime)
                 tasktimes=Task.periodCalculator(taskstarttime, tasktime)
                 ratio=currentremain/tasktimes
-                taskprogress = int(taskdocument.find({"taskid": taskids}).distinct("taskprogress")[0])
+                taskprogress = int(float(taskdocument.find({"taskid": taskids}).distinct("taskprogress")[0]))
                 tasktype = taskdocument.find({"taskid": taskids}).distinct("type")[0]
                 if (taskprogress > 90 and taskprogress<100):
                     if ratio<1 and ratio>0.5:
