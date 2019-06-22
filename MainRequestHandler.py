@@ -54,6 +54,8 @@ if sc.rtm_connect():
                         UserManager.deleteUser(dict)
                     if array[0] == "-deletetask":
                         UserManager.deleteUser(dict)
+                    if array[0] == "-taskdetail":
+                        ProjectAnalyzer.Task.checkTaskdetails(dict)
                 if dict.get('type') == "user_typing":
                     typecount = typecount + 1
                     ProjectAnalyzer.Project.connectGithub(dict.get('channel'), dict.get('user'))

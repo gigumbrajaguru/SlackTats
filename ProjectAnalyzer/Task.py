@@ -21,7 +21,7 @@ def taskmongoupdate(channels,key,point,updates):
         SlackCommunication.postMessege(channels, text)
 
 def checkAlltaskdetails(dicts):
-    taskid,taskname,strtdate,enddate,totalslack,type,status,enddepends,strtsdepends=None,None,None,None,None,None,None,None,None
+    taskids,taskname,strtdate,enddate,totalslack,type,status,enddepends,strtsdepends=None,None,None,None,None,None,None,None,None
     documents = db.get_collection("task")
     channels = dicts.get("channel")
     manager=dicts.get("user")
@@ -42,6 +42,7 @@ def checkAlltaskdetails(dicts):
             strtdate = documents.find({"taskid": taskid}).distinct("starttime")[0]
             enddate = documents.find({"taskid": taskid}).distinct("endtime")[0]
             totalslack = documents.find({"taskid": taskid}).distinct("freeslack")[0]
+            progress=documents.find({"taskid": taskid}).distinct("taskprogress")[0]
             type = documents.find({"taskid": taskid}).distinct("type")[0]
             status = documents.find({"taskid": taskid}).distinct("status")[0]
             enddepends = documents.find({"taskid": taskid}).distinct("enddepends")
@@ -55,7 +56,7 @@ def checkAlltaskdetails(dicts):
             else:
                 strtsdepends="no depends"
             text="\n Task name : "+taskname+" Task ID : "+taskid+"\n Start date : "+strtdate+\
-                 " End date : "+enddate+" \n "+" Total Slack : "+totalslack+"\n Type : "+type+\
+                 " End date : "+enddate+" \n Task progress "+progress+" \n"+" Total Slack : "+totalslack+"\n Type : "+type+\
                  " Status : "+status+"\n  Depends : "+enddepends+" Start depends :" + strtsdepends
             SlackCommunication.postMessege(channels,text)
     else:
@@ -129,6 +130,51 @@ def updatetask(dicts):
                             arraydepends = dependslist + "," + adddepends
                         taskmongoupdate(channels, taskid, type, arraydepends)
         count = count + 1
+
+
+def checkTaskdetails(dicts):
+    taskid,text,progress,taskname,strtdate,enddate,totalslack,type,status,enddepends,strtsdepends=None,None,None,None,None,None,None,None,None,None,None
+    documents = db.get_collection("task")
+    channels = dicts.get("channel")
+    manager=dicts.get("user")
+    msg = dicts.get("text")
+    if UserManager.checkUserRole(manager):
+        count=0
+        array = msg.split(" ")
+        for split in array:
+            if split!=None:
+                if split[0] == "-":
+                    if split == "-taskid":
+                        taskid = array[count + 1]
+                        taskname = documents.find({"taskid": taskid}).distinct("taskname")[0]
+                        strtdate = documents.find({"taskid": taskid}).distinct("starttime")[0]
+                        enddate = documents.find({"taskid": taskid}).distinct("endtime")[0]
+                        totalslack = documents.find({"taskid": taskid}).distinct("freeslack")[0]
+                        progress = documents.find({"taskid": taskid}).distinct("taskprogress")[0]
+                        type = documents.find({"taskid": taskid}).distinct("type")[0]
+                        status = documents.find({"taskid": taskid}).distinct("status")[0]
+                        enddepends = documents.find({"taskid": taskid}).distinct("enddepends")
+                        strtsdepends = documents.find({"taskid": taskid}).distinct("startdepends")
+
+            count=count+1
+            if enddepends!=None and enddepends!=[] and enddepends!=[None]:
+                enddepends=enddepends[0]
+            else:
+                enddepends="No depends"
+
+            if strtsdepends!=None and strtsdepends!=[] and strtsdepends!=[None]:
+                strtsdepends=strtsdepends[0]
+            else:
+                strtsdepends="No depends"
+            if taskid!=None:
+                text="\n Task name : "+taskname+" Task ID : "+taskid+"\n Start date : "+strtdate+\
+                     " End date : "+enddate+" \n Task progress "+progress+" \n"+" Total Slack : "+totalslack+"\n Type : "+type+\
+                     " Status : "+status
+        SlackCommunication.postMessege(channels,text)
+    else:
+        text = "Only manager can perform this command"
+        SlackCommunication.postMessege(channels, text)
+
 
 def statusUpdate(key,update):
     records = db.get_collection("task")

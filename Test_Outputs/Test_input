@@ -21,12 +21,13 @@
 
 -checktasks -projectid ab1002
 
+-taskdetail -taskid ab1002.01.001
 
 -forecast -taskid ab1002.01.001 -startdate 2019/1/3 -days 7
 
 -checktasks -projectid ab1002
 
--deleteuser -userid
+-deleteuser -userid UBUF3BX36
 
 
 
